@@ -167,52 +167,61 @@
 
   // ---------- Trip ----------
 
-  function countdownParts() {
-    const arrive = new Date(DATA.trip.arrive || DATA.trip.start).getTime();
-    const ms = arrive - Date.now();
+  const photo = (id, w = 1600) => `https://images.unsplash.com/photo-${id}?auto=format&fit=crop&w=${w}&q=70`;
+  const srcset = (id) => [640, 1080, 1600, 2200].map((w) => `${photo(id, w)} ${w}w`).join(', ');
+
+  function countdownParts(target) {
+    const ms = new Date(target).getTime() - Date.now();
     if (ms <= 0) return null;
-    const d = Math.floor(ms / 864e5);
-    const h = Math.floor((ms % 864e5) / 36e5);
-    const m = Math.floor((ms % 36e5) / 6e4);
-    const s = Math.floor((ms % 6e4) / 1e3);
-    return { d, h, m, s };
+    return {
+      d: Math.floor(ms / 864e5),
+      h: Math.floor((ms % 864e5) / 36e5),
+      m: Math.floor((ms % 36e5) / 6e4),
+      s: Math.floor((ms % 6e4) / 1e3),
+    };
   }
 
   const pad = (n) => String(n).padStart(2, '0');
+  const TET_EVE = '2027-02-06T00:00:00+07:00';
 
-  function countdownHTML() {
+  function clockHTML() {
     const trip = DATA.trip;
     const t = today();
     const start = toDate(trip.start);
     const end = toDate(trip.end);
-    const parts = countdownParts();
+    const p = countdownParts(trip.arrive || trip.start);
 
-    if (parts) {
+    if (p) {
       return `
-        <span class="count-num">${parts.d}</span>
-        <span class="count-label">${parts.d === 1 ? 'day' : 'days'} until we<br>land in Sài Gòn
-          <span class="ticker" data-ticker>${pad(parts.h)}<i>h</i> ${pad(parts.m)}<i>m</i> ${pad(parts.s)}<i>s</i></span>
-        </span>`;
+        <div class="clock" aria-label="Countdown to landing">
+          <div><b data-cd="d">${p.d}</b><span>days</span></div>
+          <div><b data-cd="h">${pad(p.h)}</b><span>hours</span></div>
+          <div><b data-cd="m">${pad(p.m)}</b><span>mins</span></div>
+          <div><b data-cd="s">${pad(p.s)}</b><span>secs</span></div>
+        </div>
+        <p class="clock-cap">until we land in Sài Gòn, 10:05am Sat 16 Jan</p>`;
     }
     if (t <= end) {
       const day = daysBetween(start, t) + 1;
       const total = daysBetween(start, end) + 1;
       const here = currentStop();
-      return `<span class="count-num">${day}</span>
-        <span class="count-label">day ${day} of ${total}<br>${here ? 'in ' + esc(here.name) : 'on the move'}</span>`;
+      return `
+        <div class="clock single"><div><b>${day}</b><span>of ${total} days</span></div></div>
+        <p class="clock-cap">${here ? `In ${esc(here.name)} right now` : 'On the move today'}</p>`;
     }
-    return `<span class="count-num">${daysBetween(start, end) + 1}</span>
-      <span class="count-label">days in Vietnam.<br>Not bad.</span>`;
+    return `<p class="clock-cap">${daysBetween(start, end) + 1} days in Vietnam. Not bad.</p>`;
   }
 
   function tick() {
-    const el = $('[data-ticker]');
-    if (!el || $('#view-trip').hidden) return;
-    const p = countdownParts();
-    if (!p) return;
-    el.innerHTML = `${pad(p.h)}<i>h</i> ${pad(p.m)}<i>m</i> ${pad(p.s)}<i>s</i>`;
-    const num = $('.count-num');
-    if (num && num.textContent !== String(p.d)) num.textContent = p.d;
+    if ($('#view-trip').hidden) return;
+    const p = countdownParts(DATA.trip.arrive || DATA.trip.start);
+    if (p) {
+      const set = (k, v) => { const el = $(`[data-cd="${k}"]`); if (el && el.textContent !== v) el.textContent = v; };
+      set('d', String(p.d)); set('h', pad(p.h)); set('m', pad(p.m)); set('s', pad(p.s));
+    }
+    const tp = countdownParts(TET_EVE);
+    const tel = $('[data-tet-cd]');
+    if (tel && tp) tel.textContent = tp.d;
   }
 
   // Rough outline of Vietnam, [lat, lon], clockwise from Móng Cái.
@@ -247,148 +256,199 @@
 
   const px = (lon) => (lon - 102) * 28.8;
   const py = (lat) => (23.7 - lat) * 30;
+  const shortName = (s) => (s.id === 'saigon' ? 'Sài Gòn' : s.name.replace(' Loop', '').replace(' Bay', ''));
 
-  function mapHTML() {
+  function mapSVG() {
     const stops = DATA.trip.stops;
-    const here = currentStop();
-    const outline = OUTLINE.map(([la, lo], i) => `${i ? 'L' : 'M'}${px(lo).toFixed(1)} ${py(la).toFixed(1)}`).join('') + 'Z';
+    const f = (n) => n.toFixed(1);
+    const outline = OUTLINE.map(([la, lo], i) => `${i ? 'L' : 'M'}${f(px(lo))} ${f(py(la))}`).join('') + 'Z';
     const pt = (s) => [px(s.at[1]), py(s.at[0])];
 
-    // Ground legs as runs of points, broken wherever we fly. Flights get a dashed arc.
-    const f = (n) => n.toFixed(1);
-    const segs = [];
-    let cur = [];
-    let flight = '';
-    stops.forEach((s, i) => {
-      cur.push(pt(s));
-      if (s.next && s.next.mode === 'plane' && stops[i + 1]) {
-        const a = pt(s);
-        const b = pt(stops[i + 1]);
+    // One path per leg, so the route can light up a leg at a time.
+    const legs = stops.slice(0, -1).map((s, i) => {
+      const a = pt(s);
+      const b = pt(stops[i + 1]);
+      if (s.next && s.next.mode === 'plane') {
         const cx = Math.max(a[0], b[0]) + 70;
-        flight += `M${f(a[0])} ${f(a[1])}Q${f(cx)} ${f((a[1] + b[1]) / 2)} ${f(b[0])} ${f(b[1])}`;
-        segs.push(cur);
-        cur = [];
+        return `<path class="m-leg air" data-leg="${i}" d="M${f(a[0])} ${f(a[1])}Q${f(cx)} ${f((a[1] + b[1]) / 2)} ${f(b[0])} ${f(b[1])}"/>`;
       }
-    });
-    segs.push(cur);
-    const ground = segs.filter((sg) => sg.length > 1)
-      .map((sg) => sg.map(([x, y], i) => `${i ? 'L' : 'M'}${f(x)} ${f(y)}`).join('')).join('');
+      return `<path class="m-leg" data-leg="${i}" pathLength="1" d="M${f(a[0])} ${f(a[1])}L${f(b[0])} ${f(b[1])}"/>`;
+    }).join('');
 
-    const seen = new Set();
-    const dots = stops.filter((s) => {
+    const seen = new Map();
+    stops.forEach((s, i) => {
       const k = s.at.join(',');
-      if (seen.has(k)) return false;
-      seen.add(k);
-      return true;
-    }).map((s) => {
+      if (!seen.has(k)) seen.set(k, { s, idx: [i] });
+      else seen.get(k).idx.push(i);
+    });
+
+    const dots = Array.from(seen.values()).map(({ s, idx }) => {
       const [x, y] = pt(s);
       const l = LABEL[s.id] || { dx: 11, dy: 4, a: 'start' };
-      const name = s.id === 'saigon' ? 'Sài Gòn' : s.name.replace(' Loop', '').replace(' Bay', '');
-      const now = here && here.at.join(',') === s.at.join(',');
       return `
-        <g class="m-stop${now ? ' now' : ''}" data-region="${slug(s.region)}" data-jump="${esc(s.id)}" tabindex="0" role="button" aria-label="${esc(s.name)}">
-          ${now ? `<circle class="m-pulse" cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="9"/>` : ''}
-          <circle class="m-hit" cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="16"/>
-          <circle class="m-dot" cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="5.5"/>
-          <text x="${(x + l.dx).toFixed(1)}" y="${(y + l.dy).toFixed(1)}" text-anchor="${l.a}">${esc(name)}</text>
+        <g class="m-stop" data-region="${slug(s.region)}" data-idx="${idx.join(' ')}" data-jump="${esc(s.id)}" tabindex="0" role="button" aria-label="${esc(s.name)}">
+          <circle class="m-pulse" cx="${f(x)}" cy="${f(y)}" r="9"/>
+          <circle class="m-hit" cx="${f(x)}" cy="${f(y)}" r="16"/>
+          <circle class="m-dot" cx="${f(x)}" cy="${f(y)}" r="5.5"/>
+          <text x="${f(x + l.dx)}" y="${f(y + l.dy)}" text-anchor="${l.a}">${esc(shortName(s))}</text>
         </g>`;
     }).join('');
 
     return `
-      <figure class="map card" data-reveal>
-        <figcaption>
-          <span class="eyebrow">The route</span>
-          <span class="map-key"><i class="k-ground"></i>bus &amp; train <i class="k-air"></i>flight</span>
-        </figcaption>
-        <svg viewBox="-80 -4 360 470" role="img" aria-label="Map of the route through Vietnam">
-          <path class="m-land" d="${outline}"/>
-          <path class="m-route" d="${ground}" pathLength="1"/>
-          <path class="m-air" d="${flight}"/>
-          ${dots}
-        </svg>
-      </figure>`;
+      <svg viewBox="-80 -4 360 470" role="img" aria-label="Map of the route through Vietnam">
+        <path class="m-land" d="${outline}"/>
+        ${legs}
+        ${dots}
+      </svg>`;
   }
 
-  function stopHTML(s, i) {
+  function statementHTML() {
+    const text = 'Thirty-four nights. Ten stops. Over three thousand kilometres from the motorbike swarm of Sài Gòn to the passes on the Chinese border, with New Year’s Eve on Hoàn Kiếm Lake in the middle of it all.';
+    const words = text.split(' ').map((w) => `<span class="w">${esc(w)}</span>`).join(' ');
+    return `<section class="statement" data-words><p>${words}</p></section>`;
+  }
+
+  function storyHTML() {
+    const stops = DATA.trip.stops;
+    return `
+      <section class="story">
+        <header class="section-head" data-reveal>
+          <span class="eyebrow">The route</span>
+          <h2>North, the whole way.</h2>
+        </header>
+        <div class="story-grid">
+          <div class="story-map"><div class="story-map-inner card">${mapSVG()}
+            <div class="map-key"><span><i class="k-ground"></i>Road &amp; rail</span><span><i class="k-air"></i>Flight</span></div>
+          </div></div>
+          <ol class="story-steps">
+            ${stops.map((s, i) => {
+              const g = guideFor(s.id);
+              const n = nightsOf(s);
+              return `
+                <li class="step" data-step="${i}" data-region="${slug(s.region)}">
+                  <span class="step-n">${pad(i + 1)}</span>
+                  <h3>${esc(s.id === 'hanoi-last' ? 'Hà Nội, again' : s.name)}</h3>
+                  <p class="step-when">${shortRange(s.from, s.to)} · ${n} ${n === 1 ? 'night' : 'nights'}</p>
+                  ${g.intro ? `<p>${esc(g.intro)}</p>` : ''}
+                </li>`;
+            }).join('')}
+          </ol>
+        </div>
+      </section>`;
+  }
+
+  function highlightsHTML() {
+    const cards = DATA.trip.stops.filter((s) => s.photo && s.id !== 'hanoi-last').map((s) => {
+      const top = (guideFor(s.id).picks || []).find((p) => p.top);
+      return `
+        <a class="hl-card" href="#guide" data-guide-stop="${esc(s.id)}" data-region="${slug(s.region)}">
+          <img alt="" loading="lazy" src="${photo(s.photo, 900)}" srcset="${photo(s.photo, 600)} 600w, ${photo(s.photo, 900)} 900w, ${photo(s.photo, 1300)} 1300w" sizes="(min-width: 1000px) 380px, 78vw">
+          <span class="hl-shade"></span>
+          <span class="hl-text">
+            <span class="eyebrow light">${esc(shortName(s))}</span>
+            <b>${esc(top ? top.name : s.name)}</b>
+          </span>
+          <span class="hl-plus" aria-hidden="true">+</span>
+        </a>`;
+    }).join('');
+    return `
+      <section class="highlights">
+        <header class="section-head" data-reveal>
+          <span class="eyebrow">Get the highlights</span>
+          <h2>One thing you can’t skip at every stop.</h2>
+        </header>
+        <div class="hl-scroll">${cards}</div>
+      </section>`;
+  }
+
+  function tetHTML() {
+    const tp = countdownParts(TET_EVE);
+    return `
+      <section class="tet" data-parallax>
+        <img class="tet-img" alt="" loading="lazy" src="${photo(DATA.trip.photos.tet, 1600)}" srcset="${srcset(DATA.trip.photos.tet)}" sizes="100vw">
+        <div class="tet-shade"></div>
+        <div class="tet-inner" data-reveal>
+          <span class="eyebrow light">Tết Nguyên Đán · Year of the Goat</span>
+          <h2>New Year’s Eve<br>on Hoàn Kiếm Lake.</h2>
+          <p>The holiday runs Thu 4 to Wed 10 Feb. Fireworks at midnight on Friday 5 Feb, then the city goes quiet and everyone heads to the pagodas.</p>
+          ${tp ? `<div class="tet-count"><b data-tet-cd>${tp.d}</b><span>days until<br>the fireworks</span></div>` : ''}
+        </div>
+      </section>`;
+  }
+
+  function chapterHTML(s, i) {
     const n = nightsOf(s);
     const booked = isBooked(s);
     const here = currentStop() === s;
+    const g = guideFor(s.id);
+    const top = (g.picks || []).find((p) => p.top);
     const events = (DATA.trip.events || []).filter((e) => {
       const d = toDate(e.from);
       return d >= toDate(s.from) && d < toDate(s.to);
     });
-    const g = guideFor(s.id);
-    const top = (g.picks || []).find((p) => p.top);
-
-    const stay = s.stay ? `
-      <div class="stay card">
-        <div class="stay-label">${I.bed}Stay</div>
-        <div class="stay-name">${esc(s.stay.name)}</div>
-        ${s.stay.detail ? `<div class="stay-detail">${esc(s.stay.detail)}</div>` : ''}
-        ${s.stay.link ? `<a class="stay-link" href="${esc(s.stay.link)}" target="_blank" rel="noopener">See the place ${I.out}</a>` : ''}
-        <button class="booked" type="button" data-book="${esc(s.id)}" aria-pressed="${booked}">
-          <span class="tick">${I.check}</span><span class="booked-text">${booked ? 'Booked' : 'Not booked'}</span>
-        </button>
-      </div>` : '';
-
-    const plan = s.plan && s.plan.length
-      ? `<ul class="chips">${s.plan.map((p) => `<li>${esc(p)}</li>`).join('')}</ul>` : '';
-
-    const eventCards = events.map((e) => `
-      <div class="event">
-        <span class="eyebrow">${e.from === e.to ? dayLabel(e.from) : range(e.from, e.to)}</span>
-        <h3>${esc(e.title)}</h3>
-        <p>${esc(e.note)}</p>
-      </div>`).join('');
-
-    const cost = s.cost ? `
-      <div class="cost">
-        <span><b>${money(s.cost.total)}</b>total</span>
-        <span><b>${money(s.cost.each)}</b>each</span>
-      </div>` : '';
-
-    const guideLink = top ? `
-      <a class="to-guide" href="#guide" data-guide-stop="${esc(s.id)}">
-        <span><small>Don’t miss</small>${esc(top.name)}</span>
-        <span class="to-guide-n">${g.picks.length} picks ${I.arrow}</span>
-      </a>` : '';
-
-    const showLocal = s.local && s.local !== s.name;
 
     return `
-      <article class="stop${here ? ' now' : ''}" data-region="${slug(s.region)}">
-        <div class="rail"><span class="dot"></span></div>
-        <div class="stop-body" id="stop-${esc(s.id)}" data-reveal>
-          <div class="stop-head">
-            <span class="stop-num">${String(i + 1).padStart(2, '0')}</span>
-            <span class="eyebrow">${esc(s.region)}</span>
-            ${here ? '<span class="here">You’re here</span>' : ''}
+      <article class="chapter${here ? ' now' : ''}" id="stop-${esc(s.id)}" data-region="${slug(s.region)}">
+        <div class="ch-photo" data-parallax>
+          ${s.photo ? `<img alt="" loading="lazy" src="${photo(s.photo, 1600)}" srcset="${srcset(s.photo)}" sizes="(min-width: 760px) 1100px, 100vw">` : ''}
+          <div class="ch-shade"></div>
+          <div class="ch-title" data-reveal>
+            <span class="eyebrow light">${pad(i + 1)} · ${esc(s.region)}${here ? ' · You’re here' : ''}</span>
+            <h2>${esc(s.id === 'hanoi-last' ? 'Hà Nội' : s.name)}</h2>
+            ${s.local && s.local !== s.name ? `<p class="ch-local">${esc(s.local)}</p>` : ''}
           </div>
-          <h2>${esc(s.name)}</h2>
-          ${showLocal ? `<p class="local">${esc(s.local)}</p>` : ''}
-          <p class="facts">
-            <span>${I.cal}${range(s.from, s.to)}</span>
-            <span>${I.moon}${n} ${n === 1 ? 'night' : 'nights'}</span>
-            <span>${I.users}${s.people}</span>
-            ${s.temp ? `<span title="Usual high and low">${I.temp}${s.temp[0]}° / ${s.temp[1]}°</span>` : ''}
-          </p>
-          ${eventCards}
-          ${stay}
-          ${plan}
-          ${s.note ? `<p class="note">${esc(s.note)}</p>` : ''}
-          ${guideLink}
-          ${cost}
+        </div>
+        <div class="ch-body">
+          <div class="ch-facts" data-reveal>
+            <div><span>Dates</span><b>${shortRange(s.from, s.to)}</b></div>
+            <div><span>Nights</span><b>${n}</b></div>
+            <div><span>People</span><b>${s.people}</b></div>
+            ${s.temp ? `<div><span>Usually</span><b>${s.temp[0]}°<small>/${s.temp[1]}°</small></b></div>` : ''}
+          </div>
+
+          ${events.map((e) => `
+            <div class="event" data-reveal>
+              <span class="eyebrow">${e.from === e.to ? dayLabel(e.from) : range(e.from, e.to)}</span>
+              <h3>${esc(e.title)}</h3>
+              <p>${esc(e.note)}</p>
+            </div>`).join('')}
+
+          ${s.stay ? `
+            <div class="stay card" data-reveal>
+              <div class="stay-label">${I.bed}Stay</div>
+              <div class="stay-name">${esc(s.stay.name)}</div>
+              ${s.stay.detail ? `<div class="stay-detail">${esc(s.stay.detail)}</div>` : ''}
+              ${s.stay.link ? `<a class="stay-link" href="${esc(s.stay.link)}" target="_blank" rel="noopener">See the place ${I.out}</a>` : ''}
+              <button class="booked" type="button" data-book="${esc(s.id)}" aria-pressed="${booked}">
+                <span class="tick">${I.check}</span><span class="booked-text">${booked ? 'Booked' : 'Not booked'}</span>
+              </button>
+            </div>` : ''}
+
+          ${s.plan && s.plan.length ? `<ul class="chips" data-reveal>${s.plan.map((p) => `<li>${esc(p)}</li>`).join('')}</ul>` : ''}
+          ${s.note ? `<p class="note" data-reveal>${esc(s.note)}</p>` : ''}
+
+          ${top ? `
+            <a class="to-guide" href="#guide" data-guide-stop="${esc(s.id)}" data-reveal>
+              <span><small>Don’t miss</small>${esc(top.name)}</span>
+              <span class="to-guide-n">${g.picks.length} picks ${I.arrow}</span>
+            </a>` : ''}
+
+          ${s.cost ? `
+            <div class="cost" data-reveal>
+              <span><b>${money(s.cost.total)}</b>total</span>
+              <span><b>${money(s.cost.each)}</b>each</span>
+            </div>` : ''}
         </div>
       </article>`;
   }
 
-  function legHTML(leg) {
+  function legBand(leg) {
     if (!leg) return '';
     const sub = [leg.when, leg.detail].filter(Boolean).map(esc).join(' · ');
     return `
-      <div class="leg" data-mode="${esc(leg.mode)}">
-        <div class="rail"></div>
-        <div class="leg-card" data-reveal>
+      <div class="leg-band" data-mode="${esc(leg.mode)}" data-reveal>
+        <span class="leg-line"></span>
+        <div class="leg-pill">
           <span class="leg-icon">${I[leg.mode] || I.bus}</span>
           <span class="leg-text"><b>${esc(leg.title)}</b><span>${sub}</span></span>
         </div>
@@ -401,6 +461,8 @@
     const { booked, total } = bookedCount();
     const isIOS = /iPhone|iPad|iPod/.test(navigator.userAgent);
     const standalone = window.navigator.standalone || matchMedia('(display-mode: standalone)').matches;
+    const tp = todayPlan();
+    const tpStop = tp && stopById(tp.g.id);
 
     const install = isIOS && !standalone && !state.hint ? `
       <div class="install">
@@ -408,49 +470,75 @@
         <button class="icon-btn" type="button" data-hint-close aria-label="Dismiss">${I.x}</button>
       </div>` : '';
 
+    const today = tp ? `
+      <section class="today-plan" data-region="${tpStop ? slug(tpStop.region) : ''}">
+        ${dayCard(tp.dy, tp.n, { label: `Today in ${tpStop ? tpStop.name : ''}` })}
+        <a class="to-guide" href="#guide" data-guide-stop="${esc(tp.g.id)}"><span><small>More ideas</small>Open the guide for ${esc(tpStop ? tpStop.name : 'here')}</span><span class="to-guide-n">${I.arrow}</span></a>
+      </section>` : '';
+
+    const hanoiIdx = stops.findIndex((s) => s.id === 'hanoi');
+
     $('#view-trip').innerHTML = `
-      <div class="trip-layout">
-        <div class="trip-side">
-          <header class="hero">
-            <div class="hero-top">
-              <span class="eyebrow">${range(trip.start, trip.end)} 2027</span>
-              <button class="icon-btn" type="button" data-share aria-label="Share with the group">${I.share}</button>
-            </div>
-            <h1>Việt <em>Nam</em></h1>
+      <section class="hero" data-hero>
+        <div class="hero-media">
+          <img alt="" fetchpriority="high" src="${photo(trip.photos.hero, 1600)}" srcset="${srcset(trip.photos.hero)}" sizes="100vw">
+        </div>
+        <div class="hero-shade"></div>
+        <div class="hero-inner">
+          <div class="hero-top">
+            <span class="eyebrow light">${range(trip.start, trip.end)} 2027</span>
+            <button class="icon-btn glass" type="button" data-share aria-label="Share with the group">${I.share}</button>
+          </div>
+          <div class="hero-copy">
+            <h1 class="hero-title">Việt <span class="grad">Nam</span></h1>
             <p class="hero-sub">Sài Gòn to Hà Nội, the long way round.</p>
-            <div class="countdown">${countdownHTML()}</div>
-            ${(() => {
-              const tp = todayPlan();
-              if (!tp) return '';
-              const st = stopById(tp.g.id);
-              return `<div class="today-plan">${dayCard(tp.dy, tp.n, { label: `Today in ${st ? st.name : ''}` })}
-                <a class="to-guide" href="#guide" data-guide-stop="${esc(tp.g.id)}" data-region="${st ? slug(st.region) : ''}"><span><small>More ideas</small>Open the guide for ${esc(st ? st.name : 'here')}</span><span class="to-guide-n">${I.arrow}</span></a></div>`;
-            })()}
-            ${install}
-          </header>
-
-          <div class="stats">
-            <div class="stat"><b>${daysBetween(toDate(trip.start), toDate(trip.end))}</b><span>nights</span></div>
-            <div class="stat"><b>${stops.length}</b><span>stops</span></div>
-            <div class="stat"><b data-booked-count>${booked}/${total}</b><span>stays booked</span></div>
+            ${clockHTML()}
           </div>
-
-          ${mapHTML()}
+          <button class="scroll-cue" type="button" data-scroll-cue aria-label="Scroll down">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg>
+          </button>
         </div>
+      </section>
 
-        <div class="trip-main">
-          <nav class="route" aria-label="Jump to a stop">
-            ${stops.map((s) => `<button type="button" data-jump="${esc(s.id)}" data-region="${slug(s.region)}"><i></i>${esc(s.id === 'saigon' ? 'Sài Gòn' : s.name)}</button>`).join('')}
-          </nav>
+      ${today}
+      ${install}
 
-          <div class="timeline">
-            ${stops.map((s, i) => stopHTML(s, i) + legHTML(s.next)).join('')}
-            <div class="finish"><div class="rail"><span class="dot"></span></div><p>Home, ${dayLabel(trip.end)}</p></div>
-          </div>
+      ${statementHTML()}
 
-          <p class="foot">Prices in AUD · temperatures are the usual high and low</p>
+      <section class="numbers">
+        <div class="num" data-reveal><b data-count="${daysBetween(toDate(trip.start), toDate(trip.end))}">0</b><span>nights</span></div>
+        <div class="num" data-reveal><b data-count="${stops.length}">0</b><span>stops</span></div>
+        <div class="num" data-reveal><b data-count="${trip.km || 3000}" data-suffix="+">0</b><span>kilometres</span></div>
+        <div class="num" data-reveal><b data-booked-count>${booked}/${total}</b><span>stays booked</span></div>
+      </section>
+
+      ${highlightsHTML()}
+
+      ${storyHTML()}
+
+      <section class="chapters">
+        <header class="section-head" data-reveal>
+          <span class="eyebrow">Stop by stop</span>
+          <h2>Everything, in order.</h2>
+        </header>
+        <nav class="route" aria-label="Jump to a stop">
+          ${stops.map((s) => `<button type="button" data-jump="${esc(s.id)}" data-region="${slug(s.region)}"><i></i>${esc(s.id === 'saigon' ? 'Sài Gòn' : s.id === 'hanoi-last' ? 'Hà Nội, last night' : s.name)}</button>`).join('')}
+        </nav>
+        ${stops.map((s, i) => (i === hanoiIdx ? tetHTML() : '') + chapterHTML(s, i) + legBand(s.next)).join('')}
+      </section>
+
+      <section class="outro" data-reveal>
+        <span class="eyebrow">${dayLabel(trip.end)}</span>
+        <h2>Then home.</h2>
+        <p>Probably sunburnt, definitely broke, with a phone full of photos and a tailored shirt from Hội An.</p>
+        <div class="outro-actions">
+          <a class="btn" href="#guide">Open the guide</a>
+          <button class="btn ghost" type="button" data-share>Share with the group</button>
         </div>
-      </div>`;
+        <p class="foot">Prices in AUD · temperatures are the usual high and low · ${esc(trip.photos.credit || '')}</p>
+      </section>`;
+
+    setupTripFx();
   }
 
   // ---------- Guide ----------
@@ -561,11 +649,14 @@
           ${stops.map((x) => `<button type="button" data-gstop="${esc(x.id)}" data-region="${slug(x.region)}" aria-pressed="${x.id === s.id}"><i></i>${esc(x.id === 'saigon' ? 'Sài Gòn' : x.id === 'hanoi-last' ? 'Hà Nội, last night' : x.name)}</button>`).join('')}
         </nav>
 
-        <section class="g-hero" data-region="${slug(s.region)}">
-          <span class="eyebrow">${shortRange(s.from, s.to)} · ${nightsOf(s)} ${nightsOf(s) === 1 ? 'night' : 'nights'}${s.temp ? ` · ${s.temp[0]}°/${s.temp[1]}°` : ''}</span>
-          <h2>${esc(s.name)}</h2>
-          ${g.intro ? `<p>${esc(g.intro)}</p>` : ''}
+        <section class="g-hero${s.photo ? ' has-photo' : ''}" data-region="${slug(s.region)}">
+          ${s.photo ? `<img alt="" src="${photo(s.photo, 1080)}" srcset="${srcset(s.photo)}" sizes="(min-width: 760px) 1100px, 100vw">` : ''}
+          <div class="g-hero-text">
+            <span class="eyebrow">${shortRange(s.from, s.to)} · ${nightsOf(s)} ${nightsOf(s) === 1 ? 'night' : 'nights'}${s.temp ? ` · ${s.temp[0]}°/${s.temp[1]}°` : ''}</span>
+            <h2>${esc(s.id === 'hanoi-last' ? 'Hà Nội, last night' : s.name)}</h2>
+          </div>
         </section>
+        ${g.intro ? `<p class="g-intro">${esc(g.intro)}</p>` : ''}
 
         ${daysHTML(g)}
 
@@ -930,10 +1021,99 @@
             io.unobserve(en.target);
           }
         });
-      }, { rootMargin: '0px 0px -6% 0px' });
+      }, { rootMargin: '0px 0px -8% 0px' });
     }
     els.forEach((el) => io.observe(el));
   }
+
+  const clamp = (n, a = 0, b = 1) => Math.min(b, Math.max(a, n));
+  let stepIO = null;
+  let countIO = null;
+  let words = [];
+
+  // Light up the map up to stop k.
+  function setStep(k) {
+    $$('.step').forEach((el) => el.classList.toggle('active', Number(el.dataset.step) === k));
+    $$('.m-leg').forEach((el) => el.classList.toggle('on', Number(el.dataset.leg) < k));
+    $$('.m-stop').forEach((el) => {
+      const idx = el.dataset.idx.split(' ').map(Number);
+      el.classList.toggle('active', idx.includes(k));
+      el.classList.toggle('past', !idx.includes(k) && Math.min(...idx) < k);
+    });
+  }
+
+  function countUp(el) {
+    const target = Number(el.dataset.count);
+    const suffix = el.dataset.suffix || '';
+    if (reduceMotion) { el.textContent = target.toLocaleString('en-AU') + suffix; return; }
+    const t0 = performance.now();
+    const dur = 1400;
+    const step = (now) => {
+      const p = clamp((now - t0) / dur);
+      const e = 1 - Math.pow(1 - p, 3);
+      el.textContent = Math.round(target * e).toLocaleString('en-AU') + (p === 1 ? suffix : '');
+      if (p < 1) requestAnimationFrame(step);
+    };
+    requestAnimationFrame(step);
+  }
+
+  function setupTripFx() {
+    words = $$('[data-words] .w');
+    if (stepIO) stepIO.disconnect();
+    if (countIO) countIO.disconnect();
+
+    if ('IntersectionObserver' in window) {
+      stepIO = new IntersectionObserver((entries) => {
+        entries.forEach((en) => { if (en.isIntersecting) setStep(Number(en.target.dataset.step)); });
+      }, { rootMargin: '-48% 0px -42% 0px' });
+      $$('.step').forEach((el) => stepIO.observe(el));
+
+      countIO = new IntersectionObserver((entries) => {
+        entries.forEach((en) => {
+          if (en.isIntersecting) { countUp(en.target); countIO.unobserve(en.target); }
+        });
+      }, { threshold: 0.6 });
+      $$('[data-count]').forEach((el) => countIO.observe(el));
+    } else {
+      $$('[data-count]').forEach((el) => { el.textContent = el.dataset.count + (el.dataset.suffix || ''); });
+    }
+    setStep(0);
+    scrollFx();
+  }
+
+  // Scroll-linked effects: hero zoom and fade, words lighting up, photo parallax.
+  function scrollFx() {
+    if ($('#view-trip').hidden) return;
+    const vh = window.innerHeight;
+    const y = window.scrollY;
+
+    const hero = $('[data-hero]');
+    if (hero) hero.style.setProperty('--p', clamp(y / (hero.offsetHeight * 0.85)).toFixed(3));
+
+    const st = $('[data-words]');
+    if (st && words.length) {
+      const r = st.getBoundingClientRect();
+      const prog = reduceMotion ? 1 : clamp((vh * 0.82 - r.top) / (r.height + vh * 0.25));
+      const lit = Math.round(prog * words.length);
+      words.forEach((w, i) => w.classList.toggle('on', i < lit));
+    }
+
+    if (!reduceMotion) {
+      $$('[data-parallax]').forEach((el) => {
+        const r = el.getBoundingClientRect();
+        if (r.bottom < -100 || r.top > vh + 100) return;
+        el.style.setProperty('--py', ((r.top + r.height / 2 - vh / 2) / vh).toFixed(3));
+      });
+    }
+  }
+
+  let ticking = false;
+  window.addEventListener('scroll', () => {
+    if (ticking) return;
+    ticking = true;
+    requestAnimationFrame(() => { ticking = false; scrollFx(); });
+  }, { passive: true });
+  window.addEventListener('resize', () => scrollFx(), { passive: true });
 
   // ---------- routing ----------
 
@@ -981,7 +1161,7 @@
 
   // ---------- events ----------
 
-  const ACTIONS = '[data-book],[data-jump],[data-share],[data-hint-close],[data-clear-done],[data-restore],[data-restore-all],[data-remove],[data-plan],[data-person],[data-gstop],[data-gcat],[data-gmode],[data-save],[data-guide-stop],[data-quick],[data-conv-flip]';
+  const ACTIONS = '[data-book],[data-jump],[data-share],[data-hint-close],[data-clear-done],[data-restore],[data-restore-all],[data-remove],[data-plan],[data-person],[data-gstop],[data-gcat],[data-gmode],[data-save],[data-guide-stop],[data-quick],[data-conv-flip],[data-scroll-cue]';
 
   function jumpTo(id) {
     const el = document.getElementById(`stop-${id}`);
@@ -1017,6 +1197,12 @@
     }
 
     if (d.jump) { jumpTo(d.jump); return; }
+
+    if (t.hasAttribute('data-scroll-cue')) {
+      const next = $('.statement');
+      if (next) next.scrollIntoView({ behavior: reduceMotion ? 'auto' : 'smooth', block: 'center' });
+      return;
+    }
 
     if (d.guideStop) {
       e.preventDefault();

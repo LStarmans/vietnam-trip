@@ -1,4 +1,4 @@
-const CACHE = 'vn27-v2';
+const CACHE = 'vn27-v3';
 const SHELL = [
   './',
   'index.html',

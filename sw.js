@@ -1,4 +1,4 @@
-const CACHE = 'vn27-v1';
+const CACHE = 'vn27-v2';
 const SHELL = [
   './',
   'index.html',
@@ -8,6 +8,7 @@ const SHELL = [
   'data/trip.json',
   'data/checklist.json',
   'data/budget.json',
+  'data/guide.json',
   'icons/icon-180.png',
   'icons/icon-192.png',
 ];
@@ -28,6 +29,9 @@ self.addEventListener('activate', (e) => {
 // falling back to the saved copy when there's no signal.
 self.addEventListener('fetch', (e) => {
   if (e.request.method !== 'GET') return;
+  const url = new URL(e.request.url);
+  // Live exchange rates aren't worth caching.
+  if (url.hostname === 'open.er-api.com') return;
 
   const network = fetch(e.request).then((res) => {
     if (res.ok || res.type === 'opaque') {

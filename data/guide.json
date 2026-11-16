@@ -1,0 +1,1281 @@
+{
+  "rate": 17400,
+  "cats": {
+    "do": "Do",
+    "eat": "Eat",
+    "night": "Night",
+    "viral": "Seen it online",
+    "tet": "Tết"
+  },
+  "stops": [
+    {
+      "id": "saigon",
+      "intro": "Loud, hot, and the best street food of the trip. Three days is enough to do the big stuff and still have a big night.",
+      "days": [
+        {
+          "date": "2027-01-16",
+          "title": "Land and eat",
+          "items": [
+            "Land 10:05am, Grab to District 1, drop the bags",
+            "Bánh mì at Huỳnh Hoa, then wander Bến Thành Market",
+            "Nap. You'll need it",
+            "Sunset drinks at Social Club rooftop",
+            "Bùi Viện, or the pub crawl from 8:30pm"
+          ]
+        },
+        {
+          "date": "2027-01-17",
+          "title": "Tunnels and food tour",
+          "items": [
+            "Early start for the Cu Chi Tunnels and the shooting range",
+            "Afternoon by a pool, or Independence Palace if you're keen",
+            "Night street food tour on the back of a motorbike"
+          ]
+        },
+        {
+          "date": "2027-01-18",
+          "title": "City day",
+          "items": [
+            "War Remnants Museum in the morning",
+            "Post Office, the Café Apartments and Nguyễn Huệ Street",
+            "Cơm tấm for dinner",
+            "Chill Skybar if you've got a collared shirt"
+          ]
+        },
+        {
+          "date": "2027-01-19",
+          "title": "Chinatown and go",
+          "items": [
+            "Chợ Lớn and Bình Tây Market",
+            "Last bánh mì (Bà Huynh this time)",
+            "Pack. The bus to Đà Lạt leaves super early"
+          ]
+        }
+      ],
+      "picks": [
+        {
+          "cat": "do",
+          "top": true,
+          "name": "Cu Chi Tunnels + shooting range",
+          "what": "Crawl the tunnels, then fire an AK or M60 at the range. Go to Bến Dược if you can: bigger and quieter than Bến Đình, where every tour bus goes. Leave early to beat the crowds and bring earplugs.",
+          "vnd": 110000,
+          "price": "entry, range is extra (about ₫350k for 10 rounds)",
+          "when": "Half day, morning",
+          "map": "Cu Chi Tunnels Ben Duoc"
+        },
+        {
+          "cat": "do",
+          "name": "War Remnants Museum",
+          "what": "Heavy going, but it's the one museum everyone says you shouldn't skip. Give it two hours.",
+          "vnd": 40000,
+          "when": "2 hrs",
+          "map": "War Remnants Museum Ho Chi Minh City"
+        },
+        {
+          "cat": "do",
+          "name": "Independence Palace",
+          "what": "A 1960s time capsule. Tanks on the lawn, war rooms and bunkers in the basement.",
+          "vnd": 65000,
+          "when": "1–2 hrs",
+          "map": "Independence Palace Ho Chi Minh City"
+        },
+        {
+          "cat": "do",
+          "name": "Central Post Office",
+          "what": "French-era post office that's still working. Send a postcard home from it. The cathedral's right next door.",
+          "tags": [
+            "free"
+          ],
+          "map": "Saigon Central Post Office"
+        },
+        {
+          "cat": "do",
+          "name": "Night street food tour on the back of a motorbike",
+          "what": "A local rides you around the districts you'd never find on your own, four or five food stops and a beer. Most people say it's the best thing they did in Saigon.",
+          "price": "about US$40–70 each",
+          "when": "4 hrs, from 6pm",
+          "tags": [
+            "must"
+          ],
+          "map": "Saigon motorbike street food tour"
+        },
+        {
+          "cat": "do",
+          "name": "Chợ Lớn (Chinatown)",
+          "what": "Bình Tây Market and the incense-filled Thiên Hậu temple. Feels like a different city.",
+          "map": "Binh Tay Market"
+        },
+        {
+          "cat": "eat",
+          "name": "Bánh Mì Huỳnh Hoa",
+          "what": "The famous overloaded one. There'll be a queue and it's pricier than most, but do it once.",
+          "map": "Banh Mi Huynh Hoa"
+        },
+        {
+          "cat": "eat",
+          "name": "Bánh Mì Bà Huynh",
+          "what": "Shorter queue, and some reckon it's better than Huỳnh Hoa. Try both and argue about it.",
+          "map": "Banh Mi Ba Huynh 185 Cong Quynh"
+        },
+        {
+          "cat": "eat",
+          "name": "Cơm tấm (broken rice)",
+          "what": "Grilled pork chop on broken rice with a fried egg. Saigon's everyday meal. Cơm Tấm Sà Bì Chưởng gets packed at dinner.",
+          "vnd": 60000,
+          "map": "Com Tam Sa Bi Chuong"
+        },
+        {
+          "cat": "eat",
+          "name": "Phở Tàu Bay",
+          "what": "One of the oldest phở shops in the city, well off the tourist trail.",
+          "map": "Pho Tau Bay"
+        },
+        {
+          "cat": "eat",
+          "name": "Xóm Chiếu Market",
+          "what": "Early morning food market in District 4, open about 4–11am. Go on the first morning while you're jet-lagged anyway.",
+          "map": "Cho Xom Chieu"
+        },
+        {
+          "cat": "night",
+          "name": "Bùi Viện Walking Street",
+          "what": "Backpacker chaos: speakers, shisha, buckets, fire breathers. Do it once. Two hours is plenty. Phones go missing in the crush, so keep yours in a front pocket.",
+          "tags": [
+            "must"
+          ],
+          "map": "Bui Vien Walking Street"
+        },
+        {
+          "cat": "night",
+          "name": "Pub Crawl Saigon",
+          "what": "Five bars and a club, free shots, starts around 8:30pm. Easy way to meet people on night one.",
+          "price": "about US$10",
+          "map": "Pub Crawl Saigon"
+        },
+        {
+          "cat": "night",
+          "name": "Chill Skybar",
+          "what": "26th floor rooftop with 360° views. Smart casual, so no thongs or singlets. Cocktails are dear; go for sunset happy hour.",
+          "vnd": 300000,
+          "price": "per cocktail",
+          "map": "Chill Skybar AB Tower"
+        },
+        {
+          "cat": "night",
+          "name": "Social Club Rooftop",
+          "what": "24th floor pool bar with the best District 1 skyline view. Also smart casual.",
+          "map": "Social Club Rooftop Bar Saigon"
+        },
+        {
+          "cat": "night",
+          "name": "Banana Mama",
+          "what": "Cheaper rooftop right above Bùi Viện. Good for watching the chaos below with a beer.",
+          "map": "Banana Mama Rooftop Bui Vien"
+        },
+        {
+          "cat": "viral",
+          "name": "The Café Apartments, 42 Nguyễn Huệ",
+          "what": "Old apartment block where every flat is now a café. The front of it is all over Instagram. Pay a few thousand đồng for the lift.",
+          "map": "The Cafe Apartments 42 Nguyen Hue"
+        },
+        {
+          "cat": "viral",
+          "name": "Landmark 81",
+          "what": "Tallest building in Vietnam. The bar on floors 75–76 has the widest view over the city and river.",
+          "map": "Landmark 81"
+        },
+        {
+          "cat": "viral",
+          "name": "Nguyễn Huệ Walking Street",
+          "what": "Wide pedestrian boulevard that fills up after dark with buskers and kids on hoverboards.",
+          "tags": [
+            "free"
+          ],
+          "map": "Nguyen Hue Walking Street"
+        }
+      ],
+      "tips": [
+        "Grab is the easiest way to get around. Airport to District 1 is 30–45 minutes.",
+        "Snatch-and-grab from motorbikes happens. Hold your phone on the footpath side, not the road side.",
+        "Rooftop bars want smart casual. Pack one pair of proper shoes."
+      ]
+    },
+    {
+      "id": "dalat",
+      "intro": "Pine forests, cold nights and the best adrenaline of the trip. It's a different climate, so bring a jumper.",
+      "days": [
+        {
+          "date": "2027-01-20",
+          "title": "Into the hills",
+          "items": [
+            "Arrive early, find coffee, nap",
+            "Crazy House",
+            "Alpine Coaster at Datanla",
+            "Night market: bánh tráng nướng and hot soy milk",
+            "100 Roofs (the Maze Bar)"
+          ]
+        },
+        {
+          "date": "2027-01-21",
+          "title": "Canyoning",
+          "items": [
+            "Full day canyoning at Datanla, lunch included",
+            "Chicken hot pot (lẩu gà lá é) to warm up"
+          ]
+        },
+        {
+          "date": "2027-01-22",
+          "title": "Clouds, then coast",
+          "items": [
+            "Optional 4:30am run to Cầu Đất tea hill for the sea of clouds",
+            "Bánh căn for breakfast",
+            "Minibus to Nha Trang"
+          ]
+        }
+      ],
+      "picks": [
+        {
+          "cat": "do",
+          "top": true,
+          "name": "Canyoning at Datanla",
+          "what": "Abseil down waterfalls, cliff jumps, natural slides and the famous 'washing machine'. Only book a licensed operator: Highland Sport Travel, Phat Tire Ventures or Viet Challenge. Lunch and gear are included.",
+          "price": "about ₫1.4–1.8m, full day",
+          "when": "Book the day before",
+          "tags": [
+            "must"
+          ],
+          "map": "Datanla Waterfall canyoning"
+        },
+        {
+          "cat": "do",
+          "name": "Datanla Alpine Coaster",
+          "what": "A bobsled through the forest that you control yourself. Short but good fun. Go early, the queues get long on weekends.",
+          "vnd": 100000,
+          "map": "Datanla Alpine Coaster"
+        },
+        {
+          "cat": "do",
+          "name": "White-water rafting",
+          "what": "Grade II–III rapids on the Đồng Nai River, about 45 minutes out. Fine for first-timers.",
+          "map": "Da Lat white water rafting"
+        },
+        {
+          "cat": "do",
+          "name": "Cầu Đất tea hill at sunrise",
+          "what": "'Cloud hunting': tea rows and wind turbines above a sea of cloud. It's 25 km out, so leave by 4:30am. Freezing at the top.",
+          "tags": [
+            "free"
+          ],
+          "map": "Cau Dat tea hill"
+        },
+        {
+          "cat": "do",
+          "name": "Lang Biang mountain",
+          "what": "The local peak. Hike it or take the jeep up for the view over the valley.",
+          "map": "Lang Biang Mountain"
+        },
+        {
+          "cat": "eat",
+          "name": "Bánh tráng nướng",
+          "what": "'Vietnamese pizza': rice paper grilled over coals with egg, spring onion and chilli. Da Lạt invented it. Get it at the night market.",
+          "vnd": 25000,
+          "tags": [
+            "must"
+          ],
+          "map": "Da Lat Night Market"
+        },
+        {
+          "cat": "eat",
+          "name": "Lẩu gà lá é",
+          "what": "Chicken hot pot with a peppery local herb. Perfect on a cold Đà Lạt night. There's a good one at 9 Huỳnh Thúc Kháng.",
+          "map": "lau ga la e 9 Huynh Thuc Khang Da Lat"
+        },
+        {
+          "cat": "eat",
+          "name": "Bánh căn",
+          "what": "Mini rice pancakes cooked in clay moulds and dunked in sauce. The stall at 7 Tăng Bạt Hổ is the one.",
+          "vnd": 25000,
+          "map": "Banh can 7 Tang Bat Ho Da Lat"
+        },
+        {
+          "cat": "night",
+          "name": "100 Roofs Café (the Maze Bar)",
+          "what": "A bar built like a rabbit warren: tunnels, staircases and hidden rooms. Getting lost is the point. Check the address on Google Maps first.",
+          "tags": [
+            "must"
+          ],
+          "map": "100 Roofs Cafe Da Lat"
+        },
+        {
+          "cat": "night",
+          "name": "Night market",
+          "what": "Starts around 6pm. Hot soy milk, grilled skewers, cheap jumpers. Bring cash.",
+          "tags": [
+            "free"
+          ],
+          "map": "Da Lat Night Market"
+        },
+        {
+          "cat": "viral",
+          "name": "Crazy House",
+          "what": "Gaudí meets Alice in Wonderland. Twisting staircases over the rooftops. Da Lạt's most-posted spot.",
+          "map": "Crazy House Da Lat"
+        }
+      ],
+      "tips": [
+        "Nights drop to about 10–12°C. Pack a jumper and long pants.",
+        "Canyoning means you'll be soaked all day. Wear shoes that can get wet and leave the phone at the hostel."
+      ]
+    },
+    {
+      "id": "nhatrang",
+      "intro": "Four nights of beach, boats and big nights out. Get out on the water at least twice.",
+      "days": [
+        {
+          "date": "2027-01-22",
+          "title": "Beach arvo",
+          "items": [
+            "Check in, straight to the beach",
+            "Nem nướng for dinner",
+            "Sailing Club"
+          ]
+        },
+        {
+          "date": "2027-01-23",
+          "title": "Boat day",
+          "items": [
+            "Island hopping and snorkelling at Hòn Mun",
+            "Skylight rooftop at night"
+          ]
+        },
+        {
+          "date": "2027-01-24",
+          "title": "Surf and mud",
+          "items": [
+            "Surf lesson at Bãi Dài in the morning",
+            "Mud bath and hot springs in the arvo",
+            "Night squid fishing if the sea's calm"
+          ]
+        },
+        {
+          "date": "2027-01-25",
+          "title": "Island park",
+          "items": [
+            "Cable car over the sea to VinWonders",
+            "Seafood one street back from the beach"
+          ]
+        },
+        {
+          "date": "2027-01-26",
+          "title": "Slow day",
+          "items": [
+            "Bún cá for breakfast, then Po Nagar towers",
+            "Last beach session",
+            "Overnight sleeper to Hội An"
+          ]
+        }
+      ],
+      "picks": [
+        {
+          "cat": "do",
+          "top": true,
+          "name": "Island hopping and snorkelling at Hòn Mun",
+          "what": "A day boat round the islands with a stop at the Hòn Mun marine reserve, the best snorkelling near town. Check the operator actually goes to Hòn Mun.",
+          "when": "Full day",
+          "tags": [
+            "must"
+          ],
+          "map": "Hon Mun Island Nha Trang"
+        },
+        {
+          "cat": "do",
+          "name": "Surf at Bãi Dài",
+          "what": "Long Beach, 30 minutes south. January waves are small and friendly, so it's good for learning. Nha Trang Local Surf School and Single Fin both teach in English. Watch the rips.",
+          "map": "Bai Dai Beach Nha Trang surf"
+        },
+        {
+          "cat": "do",
+          "name": "Night squid fishing",
+          "what": "Head out at sunset, drop lines under the lights, and eat what you catch for dinner. Shared boats are cheap. Weather can cancel it.",
+          "price": "shared boat from about US$20 each",
+          "when": "Evening",
+          "map": "Nha Trang night squid fishing"
+        },
+        {
+          "cat": "do",
+          "name": "Mud bath",
+          "what": "Wallow in warm mud, then hot springs and pools. Tháp Bà is on the mainland; Hòn Tằm is on an island and comes with a beach.",
+          "price": "about ₫350k–860k",
+          "map": "Thap Ba Hot Spring Center"
+        },
+        {
+          "cat": "do",
+          "name": "VinWonders",
+          "what": "Theme park and water park on Hòn Tre island. The ticket includes the 3 km cable car over the sea.",
+          "vnd": 1000000,
+          "when": "Full day",
+          "map": "VinWonders Nha Trang"
+        },
+        {
+          "cat": "do",
+          "name": "Po Nagar Cham Towers",
+          "what": "Brick temple towers over 1,000 years old, on a hill over the river mouth. Quick visit.",
+          "map": "Po Nagar Cham Towers"
+        },
+        {
+          "cat": "eat",
+          "name": "Nem nướng",
+          "what": "Grilled pork sausage you wrap in rice paper with herbs. Nha Trang's signature. Đặng Văn Quyên is always full of locals.",
+          "vnd": 60000,
+          "tags": [
+            "must"
+          ],
+          "map": "Nem nuong Dang Van Quyen Nha Trang"
+        },
+        {
+          "cat": "eat",
+          "name": "Bún cá",
+          "what": "Fish noodle soup with jellyfish. Proper Nha Trang breakfast. Try Bún Cá Nguyên Loan, 123 Ngô Gia Tự.",
+          "map": "Bun ca Nguyen Loan Nha Trang"
+        },
+        {
+          "cat": "eat",
+          "name": "Seafood, one street back",
+          "what": "The beachfront on Trần Phú charges double. Walk a block or two inland and pick it live from the tanks.",
+          "map": "seafood restaurant Nha Trang"
+        },
+        {
+          "cat": "night",
+          "name": "Sailing Club",
+          "what": "Beach restaurant by day, beach club by night. Shoes in the sand, music late.",
+          "tags": [
+            "must"
+          ],
+          "map": "Sailing Club Nha Trang"
+        },
+        {
+          "cat": "night",
+          "name": "Skylight",
+          "what": "Rooftop beach club on the 45th floor of the Havana hotel. Big views over the bay.",
+          "map": "Skylight Nha Trang"
+        },
+        {
+          "cat": "viral",
+          "name": "Cable car to Hòn Tre",
+          "what": "One of the longest over-sea cable cars anywhere. The ride's the bit everyone films.",
+          "map": "Vinpearl Cable Car Nha Trang"
+        }
+      ],
+      "tips": [
+        "Water's clearest in the middle of the year. In January it can be a bit murky after rain, so pick a calm day for snorkelling.",
+        "Hostels sell boat days and mud-bath trips cheaper than the beachfront agents."
+      ]
+    },
+    {
+      "id": "hoian",
+      "intro": "Lanterns, tailors and the best bánh mì in the country. Two nights goes fast, so order clothes the morning you arrive.",
+      "days": [
+        {
+          "date": "2027-01-27",
+          "title": "Lantern night",
+          "items": [
+            "Book the tailor first thing (two fittings needed)",
+            "Bánh Mì Phượng",
+            "Faifo Coffee rooftop",
+            "Old Town at dusk, lantern boat on the river",
+            "Night market on An Hội"
+          ]
+        },
+        {
+          "date": "2027-01-28",
+          "title": "Bikes and beach",
+          "items": [
+            "Ride through Trà Quế to An Bàng Beach",
+            "Basket boats in the coconut forest",
+            "Tailor fitting",
+            "Madam Khánh to settle the bánh mì debate",
+            "Cao lầu for dinner"
+          ]
+        },
+        {
+          "date": "2027-01-29",
+          "title": "Last morning together",
+          "items": [
+            "Old Town before 9am while it's empty",
+            "Pick up the tailoring",
+            "Three fly home, four head to Đà Nẵng"
+          ]
+        }
+      ],
+      "picks": [
+        {
+          "cat": "do",
+          "top": true,
+          "name": "Old Town at night and a lantern boat",
+          "what": "The whole town lights up after dark. Buy a boat ride from the official booths on either riverbank (not the people who come up to you) and float a candle lantern.",
+          "price": "about ₫150–220k per boat",
+          "when": "Just after sunset",
+          "tags": [
+            "must"
+          ],
+          "map": "Hoi An Ancient Town"
+        },
+        {
+          "cat": "do",
+          "name": "Old Town ticket",
+          "what": "Covers the Japanese Bridge and a few old houses and museums. Walk it before 9am, when the tour groups take over.",
+          "vnd": 120000,
+          "map": "Japanese Covered Bridge Hoi An"
+        },
+        {
+          "cat": "do",
+          "name": "Bikes to An Bàng Beach",
+          "what": "Ride out through the rice paddies and the Trà Quế veggie village to the beach. Most stays have free bikes.",
+          "tags": [
+            "free",
+            "must"
+          ],
+          "map": "An Bang Beach"
+        },
+        {
+          "cat": "do",
+          "name": "Basket boats in the coconut forest",
+          "what": "Round bamboo boats that the rowers spin like a teacup ride. Touristy, but a laugh.",
+          "map": "Cam Thanh coconut forest basket boat"
+        },
+        {
+          "cat": "do",
+          "name": "Get something tailored",
+          "what": "Suits and shirts made to measure in a day or two. You need two fittings, so go on the first morning (27 Jan).",
+          "when": "Order on day one",
+          "map": "tailor Hoi An"
+        },
+        {
+          "cat": "eat",
+          "name": "Bánh mì showdown",
+          "what": "Bánh Mì Phượng (2B Phan Châu Trinh) vs Madam Khánh, 'the Bánh Mì Queen' (115 Trần Cao Vân). People argue about it endlessly. Try both on the same day.",
+          "vnd": 35000,
+          "tags": [
+            "must"
+          ],
+          "map": "Banh Mi Phuong Hoi An"
+        },
+        {
+          "cat": "eat",
+          "name": "Cao lầu",
+          "what": "Chewy noodles you can only properly get in Hội An. Thanh Cao Lầu on Thái Phiên Street.",
+          "map": "Thanh Cao Lau Hoi An"
+        },
+        {
+          "cat": "eat",
+          "name": "Cơm gà Bà Buội",
+          "what": "Hội An chicken rice at 22 Phan Châu Trinh. Locals' favourite.",
+          "map": "Com Ga Ba Buoi Hoi An"
+        },
+        {
+          "cat": "night",
+          "name": "Night market on An Hội",
+          "what": "Across the bridge from the Old Town. Lanterns, snacks, and the riverside bars where everyone ends up.",
+          "tags": [
+            "free"
+          ],
+          "map": "Hoi An Night Market"
+        },
+        {
+          "cat": "viral",
+          "name": "Faifo Coffee rooftop",
+          "what": "Probably the café you saw on YouTube: the rooftop looking over the Old Town's yellow walls and tiles. 130 Trần Phú. Get there early for a spot at the rail.",
+          "tags": [
+            "must"
+          ],
+          "map": "Faifo Coffee Hoi An"
+        },
+        {
+          "cat": "viral",
+          "name": "Hoi An Roastery and Cocobox",
+          "what": "If Faifo's packed: both have rooftops over the Old Town too. Cocobox's only fits about ten.",
+          "map": "Hoi An Roastery"
+        }
+      ],
+      "tips": [
+        "The Old Town is quietest before 9am and after dark.",
+        "Haggle at the tailors and the markets, but not at restaurants."
+      ]
+    },
+    {
+      "id": "danang",
+      "intro": "Beach city with real waves this time of year. Six nights, so slow down: surf in the morning, ride in the arvo, seafood at night.",
+      "days": [
+        {
+          "date": "2027-01-29",
+          "title": "Settle in",
+          "items": [
+            "My Khe Beach",
+            "Bé Mặn seafood for dinner"
+          ]
+        },
+        {
+          "date": "2027-01-30",
+          "title": "Surf and fire",
+          "items": [
+            "Surf lesson at My Khe",
+            "Mì Quảng Bà Mua",
+            "Dragon Bridge fire show at 9pm (Saturday)",
+            "Sơn Trà night market"
+          ]
+        },
+        {
+          "date": "2027-01-31",
+          "title": "Hải Vân Pass",
+          "items": [
+            "Scooter up the Hải Vân Pass",
+            "An Thượng bars at night"
+          ]
+        },
+        {
+          "date": "2027-02-01",
+          "title": "On the water",
+          "items": [
+            "Fishing and snorkelling boat off Sơn Trà",
+            "Lady Buddha at Linh Ứng Pagoda",
+            "Look for the monkeys on the way back"
+          ]
+        },
+        {
+          "date": "2027-02-02",
+          "title": "Caves and pancakes",
+          "items": [
+            "Marble Mountains",
+            "Bánh xèo at Bà Dưỡng",
+            "Sunset surf"
+          ]
+        },
+        {
+          "date": "2027-02-03",
+          "title": "Golden Bridge or rest",
+          "items": [
+            "Bà Nà Hills at 7am if you want the giant hands",
+            "Or a lazy beach day before Tết",
+            "Pack for Hà Nội"
+          ]
+        }
+      ],
+      "picks": [
+        {
+          "cat": "do",
+          "top": true,
+          "name": "Surf My Khe",
+          "what": "January and February are when Đà Nẵng actually gets swell. Two-hour lessons, or rent a board from the surf shacks on the beach.",
+          "price": "lessons about US$35–40",
+          "when": "Mornings",
+          "tags": [
+            "must"
+          ],
+          "map": "My Khe Beach surf"
+        },
+        {
+          "cat": "do",
+          "name": "Hải Vân Pass",
+          "what": "The coastal mountain road Top Gear made famous. Scooter up from Đà Nẵng for the views, back by lunch.",
+          "tags": [
+            "free",
+            "must"
+          ],
+          "map": "Hai Van Pass"
+        },
+        {
+          "cat": "do",
+          "name": "Sơn Trà Peninsula",
+          "what": "Ride round to the giant Lady Buddha at Linh Ứng Pagoda and look for the rare red-shanked monkeys in the trees.",
+          "tags": [
+            "free"
+          ],
+          "map": "Linh Ung Pagoda Son Tra"
+        },
+        {
+          "cat": "do",
+          "name": "Fishing and snorkelling boat",
+          "what": "Half-day speedboat trip off Sơn Trà with a stop at a fishing village.",
+          "when": "Half day",
+          "map": "Son Tra fishing snorkeling tour"
+        },
+        {
+          "cat": "do",
+          "name": "Marble Mountains",
+          "what": "Limestone hills full of caves and pagodas. Climb to the top for a view down the coast.",
+          "vnd": 40000,
+          "map": "Marble Mountains Da Nang"
+        },
+        {
+          "cat": "do",
+          "name": "Bà Nà Hills and the Golden Bridge",
+          "what": "Expensive and touristy theme park up a mountain, but it's where the giant stone hands are. Only worth it if you're there by 7am.",
+          "vnd": 1000000,
+          "when": "Full day",
+          "map": "Golden Bridge Ba Na Hills"
+        },
+        {
+          "cat": "eat",
+          "name": "Mì Quảng Bà Mua",
+          "what": "The central Vietnam noodle dish, with pork, shrimp and crackers. 19 Trần Bình Trọng.",
+          "vnd": 40000,
+          "tags": [
+            "must"
+          ],
+          "map": "Mi Quang Ba Mua"
+        },
+        {
+          "cat": "eat",
+          "name": "Bánh xèo Bà Dưỡng",
+          "what": "Crispy pancakes wrapped in mustard leaves, with a peanut-and-liver dipping sauce. Down an alley off Hoàng Diệu.",
+          "map": "Banh Xeo Ba Duong"
+        },
+        {
+          "cat": "eat",
+          "name": "Bé Mặn seafood",
+          "what": "No-frills, pick-from-the-tank seafood that's fresh and cheap. Check the address on Maps, sources disagree.",
+          "map": "Be Man seafood Da Nang"
+        },
+        {
+          "cat": "night",
+          "name": "Dragon Bridge fire show",
+          "what": "The bridge breathes fire and water at 9pm on weekends. You're there Sat 30 and Sun 31 Jan.",
+          "tags": [
+            "free",
+            "must"
+          ],
+          "map": "Dragon Bridge Da Nang"
+        },
+        {
+          "cat": "night",
+          "name": "An Thượng",
+          "what": "The streets behind My Khe Beach. Bars, pubs and late food, where the backpackers and expats go out.",
+          "map": "An Thuong Da Nang"
+        },
+        {
+          "cat": "night",
+          "name": "Sơn Trà night market",
+          "what": "150-odd food stalls. Grab dinner here on the night of a fire show.",
+          "map": "Son Tra Night Market"
+        },
+        {
+          "cat": "viral",
+          "name": "Golden Bridge hands",
+          "what": "The bridge held up by two giant stone hands. Every second Vietnam TikTok has it in.",
+          "map": "Golden Bridge Ba Na Hills"
+        }
+      ],
+      "tips": [
+        "Tết prep kicks off while you're here: flower markets, decorations, traffic. It's a great time to be in a city.",
+        "Rent scooters by the week. It's cheaper than by the day."
+      ]
+    },
+    {
+      "id": "hanoi",
+      "intro": "You're here for Tết, the biggest few days of the year. The run-up is electric, then the first day of the new year is eerily quiet.",
+      "days": [
+        {
+          "date": "2027-02-04",
+          "title": "Tết eve eve",
+          "items": [
+            "Fly in, drop bags in the Old Quarter",
+            "Hàng Lược flower market",
+            "Bún chả and egg coffee",
+            "The Instagram tour guy before everything shuts"
+          ]
+        },
+        {
+          "date": "2027-02-05",
+          "title": "New Year's Eve",
+          "items": [
+            "Phở at 49 Bát Đàn",
+            "Calligraphy at the Temple of Literature",
+            "Get to Hoàn Kiếm Lake by 9pm, or a café balcony",
+            "Fireworks at midnight"
+          ]
+        },
+        {
+          "date": "2027-02-06",
+          "title": "Tết, day one",
+          "items": [
+            "Sleep in",
+            "Walk the empty Old Quarter",
+            "Trấn Quốc Pagoda on West Lake with the families"
+          ]
+        }
+      ],
+      "picks": [
+        {
+          "cat": "tet",
+          "top": true,
+          "name": "New Year's Eve fireworks at Hoàn Kiếm Lake",
+          "what": "Midnight on Friday 5 Feb. Streets round the lake are packed by 9pm and roads close from the afternoon. Or book a table at a lakeside café balcony.",
+          "when": "Fri 5 Feb, midnight",
+          "tags": [
+            "must",
+            "free"
+          ],
+          "map": "Hoan Kiem Lake"
+        },
+        {
+          "cat": "tet",
+          "name": "Hàng Lược flower market",
+          "what": "The Old Quarter's Tết flower market: peach blossom, kumquat trees, everyone hauling them home on motorbikes. It runs right up to New Year's Eve.",
+          "when": "4–5 Feb",
+          "tags": [
+            "free"
+          ],
+          "map": "Hang Luoc flower market Hanoi"
+        },
+        {
+          "cat": "tet",
+          "name": "First day of Tết",
+          "what": "Sat 6 Feb. The city empties and families head to the pagodas. Walk the silent Old Quarter, then go to Trấn Quốc Pagoda on West Lake.",
+          "when": "Sat 6 Feb",
+          "tags": [
+            "free"
+          ],
+          "map": "Tran Quoc Pagoda"
+        },
+        {
+          "cat": "tet",
+          "name": "Calligraphy at the Temple of Literature",
+          "what": "Calligraphers set up around Tết. Ask for a character for luck to take home.",
+          "map": "Temple of Literature Hanoi"
+        },
+        {
+          "cat": "do",
+          "name": "The Instagram tour guy",
+          "what": "Your call. Book him for the 4th, before everything shuts.",
+          "map": "Hoan Kiem Lake"
+        },
+        {
+          "cat": "do",
+          "name": "Train Street",
+          "what": "Cafés a foot from the tracks. The city cut back the trains in 2026, so check they're still running before you go.",
+          "map": "Hanoi Train Street"
+        },
+        {
+          "cat": "eat",
+          "name": "Bún chả",
+          "what": "Grilled pork, noodles and herbs in a sweet-sour broth. Hương Liên (24 Lê Văn Hưu) is the Obama one. Đắc Kim (1 Hàng Mành) is better value.",
+          "vnd": 80000,
+          "tags": [
+            "must"
+          ],
+          "map": "Bun Cha Huong Lien"
+        },
+        {
+          "cat": "eat",
+          "name": "Egg coffee at Café Giang",
+          "what": "Where egg coffee was invented. 39 Nguyễn Hữu Huân, cash only.",
+          "vnd": 35000,
+          "tags": [
+            "must"
+          ],
+          "map": "Cafe Giang Hanoi"
+        },
+        {
+          "cat": "eat",
+          "name": "Phở Gia Truyền, 49 Bát Đàn",
+          "what": "The phở with the queue down the street. Order, pay, carry your own bowl.",
+          "vnd": 70000,
+          "map": "Pho Gia Truyen Bat Dan"
+        },
+        {
+          "cat": "night",
+          "name": "Tạ Hiện beer street",
+          "what": "Bia hơi on plastic stools. May be quieter over Tết, but you'll get it properly on your last night.",
+          "tags": [
+            "must"
+          ],
+          "map": "Ta Hien Beer Street"
+        }
+      ],
+      "tips": [
+        "From about 6 to 8 Feb lots of street stalls and small shops shut. Hotels and bigger restaurants stay open.",
+        "Grab adds a Tết surcharge of about ₫10–30k per ride.",
+        "Say 'Chúc mừng năm mới' to everyone. You'll get big smiles."
+      ]
+    },
+    {
+      "id": "ninhbinh",
+      "intro": "Limestone karsts and rice fields, the scenery everyone comes to Vietnam for. It's mid-Tết, so do everything early in the morning.",
+      "days": [
+        {
+          "date": "2027-02-07",
+          "title": "Into the karsts",
+          "items": [
+            "Bus down, check in at Tam Cốc",
+            "Bikes out to Bích Động Pagoda",
+            "Goat for dinner"
+          ]
+        },
+        {
+          "date": "2027-02-08",
+          "title": "Tràng An",
+          "items": [
+            "On the Tràng An boats by 7am",
+            "Thung Nham bird valley at dusk"
+          ]
+        },
+        {
+          "date": "2027-02-09",
+          "title": "Hang Múa",
+          "items": [
+            "Sunrise climb up Hang Múa",
+            "Tam Cốc boat",
+            "Cơm cháy"
+          ]
+        },
+        {
+          "date": "2027-02-10",
+          "title": "Rest, then north",
+          "items": [
+            "Lazy morning",
+            "Overnight drive to Hà Giang"
+          ]
+        }
+      ],
+      "picks": [
+        {
+          "cat": "do",
+          "top": true,
+          "name": "Hang Múa viewpoint",
+          "what": "About 500 steps up to a stone dragon on the ridge with the whole valley below. Go at sunrise or sunset.",
+          "price": "about ₫100–150k",
+          "when": "Sunrise or sunset",
+          "tags": [
+            "must"
+          ],
+          "map": "Hang Mua viewpoint"
+        },
+        {
+          "cat": "do",
+          "name": "Tràng An boat trip",
+          "what": "The UNESCO one: 2–3 hours rowed through caves under the mountains. At Tết, be on the water by 7am.",
+          "vnd": 250000,
+          "when": "2–3 hrs",
+          "tags": [
+            "must"
+          ],
+          "map": "Trang An Scenic Landscape Complex"
+        },
+        {
+          "cat": "do",
+          "name": "Tam Cốc boat",
+          "what": "Shorter and more rustic, and the rowers use their feet. Vendors paddle up to sell snacks, so just say no thanks.",
+          "price": "about ₫150–250k",
+          "map": "Tam Coc boat"
+        },
+        {
+          "cat": "do",
+          "name": "Cycle the rice fields",
+          "what": "Hire bikes from the homestay and ride out to Bích Động Pagoda in the late afternoon.",
+          "tags": [
+            "free"
+          ],
+          "map": "Bich Dong Pagoda"
+        },
+        {
+          "cat": "do",
+          "name": "Thung Nham bird valley",
+          "what": "Thousands of birds come back to roost at dusk.",
+          "when": "Late afternoon",
+          "map": "Thung Nham Bird Park"
+        },
+        {
+          "cat": "eat",
+          "name": "Mountain goat",
+          "what": "Ninh Bình's thing: dê tái chanh (goat with lime) and goat hot pot. Quán Dê Thanh Cao on Lê Lợi does the real stuff.",
+          "tags": [
+            "must"
+          ],
+          "map": "De Thanh Cao Ninh Binh"
+        },
+        {
+          "cat": "eat",
+          "name": "Cơm cháy",
+          "what": "Crispy rice crackers with a goat or beef sauce poured over.",
+          "map": "com chay Ninh Binh"
+        },
+        {
+          "cat": "night",
+          "name": "Tam Cốc main street",
+          "what": "A few bars and a craft-beer place. Ninh Bình is an early-to-bed town, which works with sunrise at Hang Múa.",
+          "map": "Tam Coc"
+        }
+      ],
+      "tips": [
+        "Pick two big things a day at most, or you'll spend the whole time on the road.",
+        "Skip Bái Đính Pagoda over Tết unless you love crowds."
+      ]
+    },
+    {
+      "id": "hagiang",
+      "intro": "The best few days of the trip, everyone says so. Mountain passes, a canyon and homestay nights.",
+      "days": [
+        {
+          "date": "2027-02-11",
+          "title": "Heaven's Gate",
+          "items": [
+            "Quản Bạ Heaven's Gate and the twin mountains",
+            "First homestay night"
+          ]
+        },
+        {
+          "date": "2027-02-12",
+          "title": "Top of Vietnam",
+          "items": [
+            "Lũng Cú Flag Tower",
+            "Đồng Văn Old Town"
+          ]
+        },
+        {
+          "date": "2027-02-13",
+          "title": "The big one",
+          "items": [
+            "Mã Pí Lèng Pass",
+            "Boat down the Nho Quế River",
+            "Happy water and karaoke at the homestay"
+          ]
+        },
+        {
+          "date": "2027-02-14",
+          "title": "Waterfall and home",
+          "items": [
+            "Swim at Du Già (it'll be freezing)",
+            "Drive back towards Hà Nội"
+          ]
+        }
+      ],
+      "picks": [
+        {
+          "cat": "do",
+          "top": true,
+          "name": "Mã Pí Lèng Pass and the Nho Quế River",
+          "what": "The most photographed road in the north, then a boat down the emerald river through the Tu Sản canyon below it.",
+          "price": "boat about ₫100–150k",
+          "tags": [
+            "must"
+          ],
+          "map": "Ma Pi Leng Pass"
+        },
+        {
+          "cat": "do",
+          "name": "Heaven's Gate, Quản Bạ",
+          "what": "First big viewpoint on day one, over the 'Twin Mountains'.",
+          "map": "Quan Ba Heaven Gate"
+        },
+        {
+          "cat": "do",
+          "name": "Lũng Cú Flag Tower",
+          "what": "Vietnam's northernmost point, right on the China border.",
+          "map": "Lung Cu Flag Tower"
+        },
+        {
+          "cat": "do",
+          "name": "Đồng Văn Old Town",
+          "what": "Stone houses and the old quarter. If you're there on Sunday 14 Feb, catch the market.",
+          "map": "Dong Van Old Quarter"
+        },
+        {
+          "cat": "do",
+          "name": "Du Già waterfall",
+          "what": "Swimming hole at the usual last stop. It'll be freezing in February. Do it anyway.",
+          "map": "Du Gia waterfall"
+        },
+        {
+          "cat": "night",
+          "name": "Homestay nights",
+          "what": "Dinner with the riders, 'happy water' (homemade corn wine) and karaoke. It gets messy. You can say no to the shots.",
+          "map": "Ha Giang"
+        }
+      ],
+      "tips": [
+        "February is 8–18°C, and much colder on the passes. Thermals, gloves and a neck warmer.",
+        "Bring cash. There are almost no ATMs past the first day."
+      ]
+    },
+    {
+      "id": "halong",
+      "intro": "Thousands of limestone islands. Bái Tử Long and Lan Hạ are the quieter alternatives to the main Hạ Long route.",
+      "days": [
+        {
+          "date": "2027-02-15",
+          "title": "Out to the bay",
+          "items": [
+            "Transfer from Hà Nội",
+            "Board the cruise or settle in on Cát Bà"
+          ]
+        },
+        {
+          "date": "2027-02-16",
+          "title": "Kayaks and caves",
+          "items": [
+            "Kayak through the lagoons",
+            "Caves and a swim if it's warm enough"
+          ]
+        },
+        {
+          "date": "2027-02-17",
+          "title": "Cát Bà or another day on the water",
+          "items": [
+            "Hike the national park or climb Cannon Fort",
+            "Chả mực for dinner"
+          ]
+        },
+        {
+          "date": "2027-02-18",
+          "title": "Back to Hà Nội",
+          "items": [
+            "Transfer back, about 2.5 hours"
+          ]
+        }
+      ],
+      "picks": [
+        {
+          "cat": "do",
+          "top": true,
+          "name": "Overnight cruise",
+          "what": "Bái Tử Long is the quietest, with only a few boats. Lan Hạ (via Cát Bà) has the most choice and a younger crowd. Either beats the main Hạ Long route.",
+          "price": "about US$110–150 each, 2 days and 1 night",
+          "tags": [
+            "must"
+          ],
+          "map": "Bai Tu Long Bay"
+        },
+        {
+          "cat": "do",
+          "name": "Kayaking the lagoons",
+          "what": "Paddle under rock arches into hidden lagoons. Usually included on the cruise.",
+          "map": "Lan Ha Bay"
+        },
+        {
+          "cat": "do",
+          "name": "Cát Bà Island",
+          "what": "If you want a land base: hike the national park, climb Cannon Fort, and take day boats into Lan Hạ.",
+          "map": "Cat Ba Island"
+        },
+        {
+          "cat": "eat",
+          "name": "Chả mực",
+          "what": "Hạ Long's famous squid cakes. Have them with sticky rice.",
+          "map": "cha muc Ha Long"
+        }
+      ],
+      "tips": [
+        "February mornings are often misty. It burns off and it looks moody in photos, and cruises rarely get cancelled.",
+        "Book a cruise that includes the Hà Nội transfer."
+      ]
+    },
+    {
+      "id": "hanoi-last",
+      "intro": "One last night. Make it count.",
+      "days": [
+        {
+          "date": "2027-02-18",
+          "title": "Last night",
+          "items": [
+            "Bia hơi on Tạ Hiện",
+            "A speakeasy to finish",
+            "Last bún chả at whichever one won"
+          ]
+        }
+      ],
+      "picks": [
+        {
+          "cat": "night",
+          "top": true,
+          "name": "Bia hơi on Tạ Hiện",
+          "what": "Fresh beer on plastic stools, now that Tết's over and everything's open again.",
+          "tags": [
+            "must"
+          ],
+          "map": "Ta Hien Beer Street"
+        },
+        {
+          "cat": "night",
+          "name": "A proper speakeasy",
+          "what": "Hà Nội's cocktail scene is good. Kumquat Tree made the World's 50 Best discovery list.",
+          "map": "speakeasy Hanoi Old Quarter"
+        },
+        {
+          "cat": "eat",
+          "name": "Last bún chả",
+          "what": "Whichever one won.",
+          "map": "Bun Cha Dac Kim"
+        },
+        {
+          "cat": "do",
+          "name": "Coffee to take home",
+          "what": "Vietnamese coffee and a phin filter make a great cheap present.",
+          "map": "coffee shop Hanoi Old Quarter"
+        }
+      ],
+      "tips": [
+        "The airport is about 45 minutes by Grab. Leave plenty of time."
+      ]
+    }
+  ],
+  "phrases": [
+    {
+      "vi": "Xin chào",
+      "say": "sin chow",
+      "en": "Hello"
+    },
+    {
+      "vi": "Cảm ơn",
+      "say": "gahm un",
+      "en": "Thank you"
+    },
+    {
+      "vi": "Bao nhiêu tiền?",
+      "say": "bow nyew tee-en",
+      "en": "How much?"
+    },
+    {
+      "vi": "Một, hai, ba, dô!",
+      "say": "mot, hai, ba, yo!",
+      "en": "1, 2, 3, cheers!"
+    },
+    {
+      "vi": "Không cay",
+      "say": "khom kai",
+      "en": "Not spicy"
+    },
+    {
+      "vi": "Ngon quá!",
+      "say": "ngon kwa",
+      "en": "So good!"
+    },
+    {
+      "vi": "Tính tiền",
+      "say": "ting tee-en",
+      "en": "The bill, please"
+    },
+    {
+      "vi": "Chúc mừng năm mới!",
+      "say": "chook mung nam moy",
+      "en": "Happy New Year!"
+    }
+  ],
+  "rules": [
+    {
+      "title": "Tết manners",
+      "text": "Wish people 'Chúc mừng năm mới'. Don't wear all black or all white (they're for mourning), and don't argue or break things on the first day. If you're invited to someone's home, bring fruit or sweets."
+    },
+    {
+      "title": "Money",
+      "text": "The ₫20,000 and ₫500,000 notes are both blue. Check before you hand one over. Street food is cash only. Haggle at markets, not in restaurants."
+    },
+    {
+      "title": "Getting around",
+      "text": "Use Grab for cars and bikes; the price is fixed up front. Always wear the helmet."
+    },
+    {
+      "title": "Phones",
+      "text": "Bag snatchers on motorbikes work the busy streets in Sài Gòn. Hold your phone away from the road."
+    }
+  ]
+}

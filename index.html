@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <title>Việt Nam '27</title>
-  <meta name="description" content="Sài Gòn to Hà Nội, 16 Jan – 19 Feb 2027. Where we're going, how we're getting there, and what's left to sort.">
+  <meta name="description" content="Sài Gòn to Hà Nội, 16 Jan – 19 Feb 2027. Where we're going, how we're getting there, what to do, and what's left to sort.">
 
   <meta name="theme-color" content="#F3EDE2" media="(prefers-color-scheme: light)">
   <meta name="theme-color" content="#15130F" media="(prefers-color-scheme: dark)">
@@ -33,15 +33,21 @@
 <body>
   <main>
     <section id="view-trip" class="view" aria-label="Trip"></section>
-    <section id="view-todo" class="view" aria-label="To-do" hidden></section>
-    <section id="view-budget" class="view" aria-label="Budget" hidden></section>
+    <section id="view-guide" class="view" aria-label="Guide" hidden></section>
+    <section id="view-todo" class="view narrow" aria-label="To-do" hidden></section>
+    <section id="view-budget" class="view narrow" aria-label="Budget" hidden></section>
   </main>
 
   <nav class="tabbar" aria-label="Sections">
     <div class="tabbar-inner">
+      <span class="tab-pill" aria-hidden="true"></span>
       <a class="tab" href="#trip" data-tab="trip">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14.1 5.6a2 2 0 0 0 1.8 0l3.7-1.9a1 1 0 0 1 1.4.9v12.8a1 1 0 0 1-.6.9l-4.5 2.3a2 2 0 0 1-1.8 0l-4.2-2.1a2 2 0 0 0-1.8 0l-3.7 1.8a1 1 0 0 1-1.4-.9V6.6a1 1 0 0 1 .6-.9l4.5-2.3a2 2 0 0 1 1.8 0z"/><path d="M15 5.8v15M9 3.2v15"/></svg>
         <span>Trip</span>
+      </a>
+      <a class="tab" href="#guide" data-tab="guide">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="m16.2 7.8-2.1 6.3-6.3 2.1 2.1-6.3z"/></svg>
+        <span>Guide</span>
       </a>
       <a class="tab" href="#todo" data-tab="todo">
         <span class="tab-icon">
@@ -52,7 +58,7 @@
       </a>
       <a class="tab" href="#budget" data-tab="budget">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 7V4a1 1 0 0 0-1-1H5a2 2 0 0 0 0 4h15a1 1 0 0 1 1 1v4h-3a2 2 0 0 0 0 4h3a1 1 0 0 0 1-1v-2a1 1 0 0 0-1-1"/><path d="M3 5v14a2 2 0 0 0 2 2h15a1 1 0 0 0 1-1v-4"/></svg>
-        <span>Budget</span>
+        <span>Money</span>
       </a>
     </div>
   </nav>

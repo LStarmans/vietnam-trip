@@ -2,23 +2,38 @@
 
 (() => {
   const STORE = 'vn27';
-  const VIEWS = ['trip', 'todo', 'budget'];
+  const VIEWS = ['trip', 'guide', 'todo', 'budget'];
   const MON = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
   const DOW = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 
   const $ = (sel, el = document) => el.querySelector(sel);
+  const $$ = (sel, el = document) => Array.from(el.querySelectorAll(sel));
   const esc = (s) => String(s == null ? '' : s).replace(/[&<>"']/g, (c) => (
     { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]
   ));
 
   // ---------- saved state (per phone) ----------
 
-  const state = Object.assign(
-    { booked: {}, people: {}, me: null, plan: 'month', hint: false },
-    read()
-  );
+  const state = Object.assign({
+    booked: {},
+    people: {},
+    me: null,
+    plan: 'month',
+    hint: false,
+    saved: {},
+    guideStop: null,
+    guideCat: 'all',
+    guideMode: 'places',
+    rate: null,
+  }, read());
 
-  // Each person gets their own ticks, cleared items and extras.
+  function read() {
+    try { return JSON.parse(localStorage.getItem(STORE)) || {}; } catch (e) { return {}; }
+  }
+  function save() {
+    try { localStorage.setItem(STORE, JSON.stringify(state)); } catch (e) { /* private mode */ }
+  }
+
   function mine() {
     if (!state.people[state.me]) state.people[state.me] = { done: {}, cleared: {}, custom: [] };
     return state.people[state.me];
@@ -28,19 +43,14 @@
     return (DATA.checklist.people || []).find((p) => p.name === state.me) || null;
   }
 
-  function read() {
-    try { return JSON.parse(localStorage.getItem(STORE)) || {}; } catch (e) { return {}; }
-  }
-  function save() {
-    try { localStorage.setItem(STORE, JSON.stringify(state)); } catch (e) { /* private mode */ }
-  }
-
   // ---------- helpers ----------
 
   const toDate = (s) => { const [y, m, d] = s.split('-').map(Number); return new Date(y, m - 1, d); };
   const daysBetween = (a, b) => Math.round((b - a) / 864e5);
   const nightsOf = (s) => daysBetween(toDate(s.from), toDate(s.to));
-  const slug = (s) => String(s).toLowerCase().replace(/\s+/g, '-');
+  const slug = (s) => String(s).toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '')
+    .replace(/đ/g, 'd').replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+  const reduceMotion = matchMedia('(prefers-reduced-motion: reduce)').matches;
 
   function today() {
     const t = new Date();
@@ -60,6 +70,14 @@
     return `${DOW[A.getDay()]} ${A.getDate()}${sameMonth ? '' : ' ' + MON[A.getMonth()]} – ${DOW[B.getDay()]} ${B.getDate()} ${MON[B.getMonth()]}`;
   }
 
+  function shortRange(a, b) {
+    const A = toDate(a);
+    const B = toDate(b);
+    return A.getMonth() === B.getMonth()
+      ? `${A.getDate()}–${B.getDate()} ${MON[B.getMonth()]}`
+      : `${A.getDate()} ${MON[A.getMonth()]} – ${B.getDate()} ${MON[B.getMonth()]}`;
+  }
+
   function money(n) {
     return '$' + Number(n).toLocaleString('en-AU', {
       minimumFractionDigits: n % 1 ? 2 : 0,
@@ -67,8 +85,25 @@
     });
   }
 
-  const icon = (paths, extra = '') =>
-    `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" ${extra}>${paths}</svg>`;
+  function dong(n) {
+    if (n >= 1e6) return `₫${+(n / 1e6).toFixed(2)}m`;
+    if (n >= 1e3) return `₫${+(n / 1e3).toFixed(1)}k`;
+    return `₫${n}`;
+  }
+
+  function rate() {
+    return (state.rate && state.rate.v) || (DATA && DATA.guide && DATA.guide.rate) || 17400;
+  }
+
+  function toAud(vnd) {
+    const a = vnd / rate();
+    return a < 10 ? `A$${a.toFixed(a < 1 ? 2 : 1).replace(/\.0$/, '')}` : `A$${Math.round(a)}`;
+  }
+
+  const mapsUrl = (q) => `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(q)}`;
+
+  const icon = (paths) =>
+    `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${paths}</svg>`;
 
   const I = {
     bus: icon('<path d="M8 6v6M15 6v6M2 12h19.6M18 18h3s.5-1.7.8-2.8c.1-.4.2-.8.2-1.2s-.1-.8-.2-1.2l-1.4-5C20.1 6.8 19.1 6 18 6H4a2 2 0 0 0-2 2v10h3M9 18h5"/><circle cx="7" cy="18" r="2"/><circle cx="16" cy="18" r="2"/>'),
@@ -80,10 +115,16 @@
     moon: icon('<path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/>'),
     users: icon('<path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.9M16 3.1a4 4 0 0 1 0 7.8"/>'),
     cal: icon('<rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/>'),
+    temp: icon('<path d="M14 4v10.5a4 4 0 1 1-4 0V4a2 2 0 0 1 4 0Z"/>'),
     check: icon('<path d="M20 6 9 17l-5-5"/>'),
     share: icon('<path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8M16 6l-4-4-4 4M12 2v13"/>'),
-    out: icon('<path d="M15 3h6v6M10 14 21 3M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/>'),
+    out: icon('<path d="M15 3h6v6M10 14 21 3M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h11"/>'),
     x: icon('<path d="M18 6 6 18M6 6l12 12"/>'),
+    pin: icon('<path d="M20 10c0 5-5.5 10.2-7.4 11.8a1 1 0 0 1-1.2 0C9.5 20.2 4 15 4 10a8 8 0 0 1 16 0"/><circle cx="12" cy="10" r="3"/>'),
+    heart: icon('<path d="M19 14c1.5-1.5 3-3.2 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.8 0-3 .5-4.5 2-1.5-1.5-2.7-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4 3 5.5l7 7Z"/>'),
+    clock: icon('<circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/>'),
+    arrow: icon('<path d="M5 12h14M12 5l7 7-7 7"/>'),
+    swap: icon('<path d="m16 3 4 4-4 4M20 7H4M8 21l-4-4 4-4M4 17h16"/>'),
   };
 
   // ---------- data ----------
@@ -106,18 +147,52 @@
     return DATA.trip.stops.find((s) => t >= toDate(s.from) && t < toDate(s.to));
   }
 
+  // The stop that's happening now, or the next one coming up.
+  function focusStop() {
+    const t = today();
+    return currentStop()
+      || DATA.trip.stops.find((s) => toDate(s.from) >= t)
+      || DATA.trip.stops[0];
+  }
+
+  function guideFor(id) {
+    return (DATA.guide.stops || []).find((g) => g.id === id) || { picks: [], tips: [] };
+  }
+
+  function stopById(id) {
+    return DATA.trip.stops.find((s) => s.id === id);
+  }
+
+  const pickKey = (stopId, p) => `${stopId}:${slug(p.name)}`;
+
   // ---------- Trip ----------
+
+  function countdownParts() {
+    const arrive = new Date(DATA.trip.arrive || DATA.trip.start).getTime();
+    const ms = arrive - Date.now();
+    if (ms <= 0) return null;
+    const d = Math.floor(ms / 864e5);
+    const h = Math.floor((ms % 864e5) / 36e5);
+    const m = Math.floor((ms % 36e5) / 6e4);
+    const s = Math.floor((ms % 6e4) / 1e3);
+    return { d, h, m, s };
+  }
+
+  const pad = (n) => String(n).padStart(2, '0');
 
   function countdownHTML() {
     const trip = DATA.trip;
     const t = today();
     const start = toDate(trip.start);
     const end = toDate(trip.end);
-    const until = daysBetween(t, start);
+    const parts = countdownParts();
 
-    if (until > 0) {
-      return `<span class="count-num">${until}</span>
-        <span class="count-label">${until === 1 ? 'day' : 'days'} until<br>we land in Sài Gòn</span>`;
+    if (parts) {
+      return `
+        <span class="count-num">${parts.d}</span>
+        <span class="count-label">${parts.d === 1 ? 'day' : 'days'} until we<br>land in Sài Gòn
+          <span class="ticker" data-ticker>${pad(parts.h)}<i>h</i> ${pad(parts.m)}<i>m</i> ${pad(parts.s)}<i>s</i></span>
+        </span>`;
     }
     if (t <= end) {
       const day = daysBetween(start, t) + 1;
@@ -130,6 +205,110 @@
       <span class="count-label">days in Vietnam.<br>Not bad.</span>`;
   }
 
+  function tick() {
+    const el = $('[data-ticker]');
+    if (!el || $('#view-trip').hidden) return;
+    const p = countdownParts();
+    if (!p) return;
+    el.innerHTML = `${pad(p.h)}<i>h</i> ${pad(p.m)}<i>m</i> ${pad(p.s)}<i>s</i>`;
+    const num = $('.count-num');
+    if (num && num.textContent !== String(p.d)) num.textContent = p.d;
+  }
+
+  // Rough outline of Vietnam, [lat, lon], clockwise from Móng Cái.
+  const OUTLINE = [
+    [21.52, 107.97], [21.0, 107.35], [20.95, 107.08], [20.85, 106.75], [20.45, 106.6], [20.15, 106.4],
+    [19.85, 105.95], [19.25, 105.78], [18.75, 105.75], [18.3, 106.1], [17.9, 106.45], [17.47, 106.65],
+    [16.95, 107.1], [16.55, 107.6], [16.2, 108.05], [16.1, 108.3], [15.88, 108.42], [15.4, 108.8],
+    [15.1, 108.9], [14.4, 109.05], [13.77, 109.25], [13.1, 109.32], [12.65, 109.45], [12.25, 109.2],
+    [11.9, 109.17], [11.55, 109.02], [11.25, 108.75], [10.93, 108.12], [10.55, 107.5], [10.35, 107.08],
+    [10.05, 106.75], [9.6, 106.55], [9.25, 106.0], [9.1, 105.7], [8.6, 104.75], [9.0, 104.8],
+    [9.6, 104.85], [10.0, 105.08], [10.38, 104.48], [10.75, 105.05], [10.95, 105.5], [11.0, 106.1],
+    [11.45, 105.9], [11.75, 106.4], [11.95, 106.95], [12.25, 107.45], [12.7, 107.55], [13.2, 107.45],
+    [14.0, 107.5], [14.7, 107.55], [15.3, 107.45], [15.9, 107.2], [16.3, 107.0], [16.65, 106.6],
+    [17.2, 106.2], [17.7, 105.8], [18.2, 105.3], [18.6, 104.9], [19.0, 104.4], [19.3, 104.05],
+    [19.6, 104.15], [20.15, 104.4], [20.5, 104.15], [20.85, 103.75], [21.35, 103.0], [21.7, 102.9],
+    [22.4, 102.15], [22.6, 102.7], [22.75, 103.35], [22.5, 103.97], [22.85, 104.4], [23.15, 104.85],
+    [23.39, 105.32], [23.0, 105.8], [22.95, 106.6], [22.55, 106.75], [22.3, 106.65], [21.95, 106.75],
+    [21.6, 107.4],
+  ];
+
+  const LABEL = {
+    saigon: { dx: -11, dy: 5, a: 'end' },
+    dalat: { dx: -11, dy: 10, a: 'end' },
+    nhatrang: { dx: 11, dy: 4, a: 'start' },
+    hoian: { dx: 11, dy: 13, a: 'start' },
+    danang: { dx: 11, dy: -3, a: 'start' },
+    hanoi: { dx: -10, dy: -6, a: 'end' },
+    ninhbinh: { dx: -10, dy: 15, a: 'end' },
+    hagiang: { dx: 11, dy: 4, a: 'start' },
+    halong: { dx: 11, dy: 5, a: 'start' },
+  };
+
+  const px = (lon) => (lon - 102) * 28.8;
+  const py = (lat) => (23.7 - lat) * 30;
+
+  function mapHTML() {
+    const stops = DATA.trip.stops;
+    const here = currentStop();
+    const outline = OUTLINE.map(([la, lo], i) => `${i ? 'L' : 'M'}${px(lo).toFixed(1)} ${py(la).toFixed(1)}`).join('') + 'Z';
+    const pt = (s) => [px(s.at[1]), py(s.at[0])];
+
+    // Ground legs as runs of points, broken wherever we fly. Flights get a dashed arc.
+    const f = (n) => n.toFixed(1);
+    const segs = [];
+    let cur = [];
+    let flight = '';
+    stops.forEach((s, i) => {
+      cur.push(pt(s));
+      if (s.next && s.next.mode === 'plane' && stops[i + 1]) {
+        const a = pt(s);
+        const b = pt(stops[i + 1]);
+        const cx = Math.max(a[0], b[0]) + 70;
+        flight += `M${f(a[0])} ${f(a[1])}Q${f(cx)} ${f((a[1] + b[1]) / 2)} ${f(b[0])} ${f(b[1])}`;
+        segs.push(cur);
+        cur = [];
+      }
+    });
+    segs.push(cur);
+    const ground = segs.filter((sg) => sg.length > 1)
+      .map((sg) => sg.map(([x, y], i) => `${i ? 'L' : 'M'}${f(x)} ${f(y)}`).join('')).join('');
+
+    const seen = new Set();
+    const dots = stops.filter((s) => {
+      const k = s.at.join(',');
+      if (seen.has(k)) return false;
+      seen.add(k);
+      return true;
+    }).map((s) => {
+      const [x, y] = pt(s);
+      const l = LABEL[s.id] || { dx: 11, dy: 4, a: 'start' };
+      const name = s.id === 'saigon' ? 'Sài Gòn' : s.name.replace(' Loop', '').replace(' Bay', '');
+      const now = here && here.at.join(',') === s.at.join(',');
+      return `
+        <g class="m-stop${now ? ' now' : ''}" data-region="${slug(s.region)}" data-jump="${esc(s.id)}" tabindex="0" role="button" aria-label="${esc(s.name)}">
+          ${now ? `<circle class="m-pulse" cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="9"/>` : ''}
+          <circle class="m-hit" cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="16"/>
+          <circle class="m-dot" cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="5.5"/>
+          <text x="${(x + l.dx).toFixed(1)}" y="${(y + l.dy).toFixed(1)}" text-anchor="${l.a}">${esc(name)}</text>
+        </g>`;
+    }).join('');
+
+    return `
+      <figure class="map card" data-reveal>
+        <figcaption>
+          <span class="eyebrow">The route</span>
+          <span class="map-key"><i class="k-ground"></i>bus &amp; train <i class="k-air"></i>flight</span>
+        </figcaption>
+        <svg viewBox="-80 -4 360 470" role="img" aria-label="Map of the route through Vietnam">
+          <path class="m-land" d="${outline}"/>
+          <path class="m-route" d="${ground}" pathLength="1"/>
+          <path class="m-air" d="${flight}"/>
+          ${dots}
+        </svg>
+      </figure>`;
+  }
+
   function stopHTML(s, i) {
     const n = nightsOf(s);
     const booked = isBooked(s);
@@ -138,9 +317,11 @@
       const d = toDate(e.from);
       return d >= toDate(s.from) && d < toDate(s.to);
     });
+    const g = guideFor(s.id);
+    const top = (g.picks || []).find((p) => p.top);
 
     const stay = s.stay ? `
-      <div class="stay">
+      <div class="stay card">
         <div class="stay-label">${I.bed}Stay</div>
         <div class="stay-name">${esc(s.stay.name)}</div>
         ${s.stay.detail ? `<div class="stay-detail">${esc(s.stay.detail)}</div>` : ''}
@@ -166,12 +347,18 @@
         <span><b>${money(s.cost.each)}</b>each</span>
       </div>` : '';
 
+    const guideLink = top ? `
+      <a class="to-guide" href="#guide" data-guide-stop="${esc(s.id)}">
+        <span><small>Don’t miss</small>${esc(top.name)}</span>
+        <span class="to-guide-n">${g.picks.length} picks ${I.arrow}</span>
+      </a>` : '';
+
     const showLocal = s.local && s.local !== s.name;
 
     return `
       <article class="stop${here ? ' now' : ''}" data-region="${slug(s.region)}">
         <div class="rail"><span class="dot"></span></div>
-        <div class="stop-body" id="stop-${esc(s.id)}">
+        <div class="stop-body" id="stop-${esc(s.id)}" data-reveal>
           <div class="stop-head">
             <span class="stop-num">${String(i + 1).padStart(2, '0')}</span>
             <span class="eyebrow">${esc(s.region)}</span>
@@ -183,11 +370,13 @@
             <span>${I.cal}${range(s.from, s.to)}</span>
             <span>${I.moon}${n} ${n === 1 ? 'night' : 'nights'}</span>
             <span>${I.users}${s.people}</span>
+            ${s.temp ? `<span title="Usual high and low">${I.temp}${s.temp[0]}° / ${s.temp[1]}°</span>` : ''}
           </p>
           ${eventCards}
           ${stay}
           ${plan}
           ${s.note ? `<p class="note">${esc(s.note)}</p>` : ''}
+          ${guideLink}
           ${cost}
         </div>
       </article>`;
@@ -197,9 +386,9 @@
     if (!leg) return '';
     const sub = [leg.when, leg.detail].filter(Boolean).map(esc).join(' · ');
     return `
-      <div class="leg">
+      <div class="leg" data-mode="${esc(leg.mode)}">
         <div class="rail"></div>
-        <div class="leg-card">
+        <div class="leg-card" data-reveal>
           <span class="leg-icon">${I[leg.mode] || I.bus}</span>
           <span class="leg-text"><b>${esc(leg.title)}</b><span>${sub}</span></span>
         </div>
@@ -220,33 +409,228 @@
       </div>` : '';
 
     $('#view-trip').innerHTML = `
-      <header class="hero">
-        <div class="hero-top">
-          <span class="eyebrow">${range(trip.start, trip.end)} 2027</span>
-          <button class="icon-btn" type="button" data-share aria-label="Share with the group">${I.share}</button>
+      <div class="trip-layout">
+        <div class="trip-side">
+          <header class="hero">
+            <div class="hero-top">
+              <span class="eyebrow">${range(trip.start, trip.end)} 2027</span>
+              <button class="icon-btn" type="button" data-share aria-label="Share with the group">${I.share}</button>
+            </div>
+            <h1>Việt <em>Nam</em></h1>
+            <p class="hero-sub">Sài Gòn to Hà Nội, the long way round.</p>
+            <div class="countdown">${countdownHTML()}</div>
+            ${(() => {
+              const tp = todayPlan();
+              if (!tp) return '';
+              const st = stopById(tp.g.id);
+              return `<div class="today-plan">${dayCard(tp.dy, tp.n, { label: `Today in ${st ? st.name : ''}` })}
+                <a class="to-guide" href="#guide" data-guide-stop="${esc(tp.g.id)}" data-region="${st ? slug(st.region) : ''}"><span><small>More ideas</small>Open the guide for ${esc(st ? st.name : 'here')}</span><span class="to-guide-n">${I.arrow}</span></a></div>`;
+            })()}
+            ${install}
+          </header>
+
+          <div class="stats">
+            <div class="stat"><b>${daysBetween(toDate(trip.start), toDate(trip.end))}</b><span>nights</span></div>
+            <div class="stat"><b>${stops.length}</b><span>stops</span></div>
+            <div class="stat"><b data-booked-count>${booked}/${total}</b><span>stays booked</span></div>
+          </div>
+
+          ${mapHTML()}
         </div>
-        <h1>Việt <em>Nam</em></h1>
-        <p class="hero-sub">Sài Gòn to Hà Nội, the long way round.</p>
-        <div class="countdown">${countdownHTML()}</div>
-        ${install}
+
+        <div class="trip-main">
+          <nav class="route" aria-label="Jump to a stop">
+            ${stops.map((s) => `<button type="button" data-jump="${esc(s.id)}" data-region="${slug(s.region)}"><i></i>${esc(s.id === 'saigon' ? 'Sài Gòn' : s.name)}</button>`).join('')}
+          </nav>
+
+          <div class="timeline">
+            ${stops.map((s, i) => stopHTML(s, i) + legHTML(s.next)).join('')}
+            <div class="finish"><div class="rail"><span class="dot"></span></div><p>Home, ${dayLabel(trip.end)}</p></div>
+          </div>
+
+          <p class="foot">Prices in AUD · temperatures are the usual high and low</p>
+        </div>
+      </div>`;
+  }
+
+  // ---------- Guide ----------
+
+  function pickHTML(stopId, p, opts = {}) {
+    const key = pickKey(stopId, p);
+    const saved = !!state.saved[key];
+    const tags = p.tags || [];
+    const cats = DATA.guide.cats || {};
+    const meta = [];
+    if (p.vnd) meta.push(`<span class="price"><b>${dong(p.vnd)}</b>&nbsp;≈&nbsp;${toAud(p.vnd)}</span>`);
+    else if (p.price) meta.push(`<span class="price">${esc(p.price)}</span>`);
+    if (p.when) meta.push(`<span>${I.clock}${esc(p.when)}</span>`);
+    if (p.vnd && p.price) meta.push(`<span class="price-note">${esc(p.price)}</span>`);
+
+    return `
+      <article class="pick${opts.top ? ' top' : ''}" data-cat="${esc(p.cat)}" data-reveal>
+        <div class="pick-top">
+          ${opts.top ? '<span class="pick-flag">Don’t miss</span>' : `<span class="pick-cat">${esc(cats[p.cat] || p.cat)}</span>`}
+          ${opts.stopName ? `<span class="pick-where">${esc(opts.stopName)}</span>` : ''}
+          ${tags.includes('must') && !opts.top ? '<span class="badge must">Must</span>' : ''}
+          ${tags.includes('free') ? '<span class="badge free">Free</span>' : ''}
+        </div>
+        <h3>${esc(p.name)}</h3>
+        <p>${esc(p.what)}</p>
+        ${meta.length ? `<div class="pick-meta">${meta.join('')}</div>` : ''}
+        <div class="pick-actions">
+          ${p.map ? `<a class="mini" href="${mapsUrl(p.map)}" target="_blank" rel="noopener">${I.pin}Map</a>` : ''}
+          <button class="mini save" type="button" data-save="${esc(key)}" aria-pressed="${saved}">${I.heart}<span>${saved ? 'Saved' : 'Save'}</span></button>
+        </div>
+      </article>`;
+  }
+
+  const iso = (d) => `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
+
+  function dayCard(dy, n, opts = {}) {
+    const isToday = dy.date === iso(today());
+    return `
+      <article class="day${isToday ? ' today' : ''}">
+        <div class="day-head">
+          <span class="day-n">${opts.label || `Day ${n}`}</span>
+          <span class="day-date">${dayLabel(dy.date)}</span>
+        </div>
+        <h4>${esc(dy.title)}</h4>
+        <ol>${dy.items.map((it) => `<li>${esc(it)}</li>`).join('')}</ol>
+      </article>`;
+  }
+
+  function daysHTML(g) {
+    if (!g.days || !g.days.length) return '';
+    return `
+      <section class="days" data-reveal>
+        <div class="days-top">
+          <span class="eyebrow">How we’d do it</span>
+          <span class="days-hint">${g.days.length} ${g.days.length === 1 ? 'day' : 'days'}${g.days.length > 1 ? ' · swipe' : ''}</span>
+        </div>
+        <div class="days-scroll">${g.days.map((dy, i) => dayCard(dy, i + 1)).join('')}</div>
+      </section>`;
+  }
+
+  // During the trip, whatever's planned for today.
+  function todayPlan() {
+    const t = iso(today());
+    for (const g of DATA.guide.stops || []) {
+      const i = (g.days || []).findIndex((dy) => dy.date === t);
+      if (i >= 0) return { g, dy: g.days[i], n: i + 1 };
+    }
+    return null;
+  }
+
+  function savedList() {
+    const out = [];
+    DATA.trip.stops.forEach((s) => {
+      (guideFor(s.id).picks || []).forEach((p) => {
+        if (state.saved[pickKey(s.id, p)]) out.push({ s, p });
+      });
+    });
+    return out;
+  }
+
+  function renderGuide() {
+    const stops = DATA.trip.stops;
+    if (!state.guideStop || !stopById(state.guideStop)) state.guideStop = focusStop().id;
+    const s = stopById(state.guideStop);
+    const g = guideFor(s.id);
+    const cats = DATA.guide.cats || {};
+    const nSaved = savedList().length;
+    const mode = state.guideMode;
+
+    const modes = `
+      <div class="seg seg-3" role="group" aria-label="Guide sections">
+        <button type="button" data-gmode="places" aria-pressed="${mode === 'places'}">Places</button>
+        <button type="button" data-gmode="saved" aria-pressed="${mode === 'saved'}">Saved${nSaved ? ` · ${nSaved}` : ''}</button>
+        <button type="button" data-gmode="talk" aria-pressed="${mode === 'talk'}">Phrases</button>
+      </div>`;
+
+    let body = '';
+
+    if (mode === 'places') {
+      const top = g.picks.find((p) => p.top);
+      const rest = g.picks.filter((p) => !p.top);
+      const present = Object.keys(cats).filter((c) => rest.some((p) => p.cat === c));
+      if (state.guideCat !== 'all' && !present.includes(state.guideCat)) state.guideCat = 'all';
+      const shown = state.guideCat === 'all' ? rest : rest.filter((p) => p.cat === state.guideCat);
+
+      body = `<div data-region="${slug(s.region)}">
+        <nav class="route guide-stops" aria-label="Pick a stop">
+          ${stops.map((x) => `<button type="button" data-gstop="${esc(x.id)}" data-region="${slug(x.region)}" aria-pressed="${x.id === s.id}"><i></i>${esc(x.id === 'saigon' ? 'Sài Gòn' : x.id === 'hanoi-last' ? 'Hà Nội, last night' : x.name)}</button>`).join('')}
+        </nav>
+
+        <section class="g-hero" data-region="${slug(s.region)}">
+          <span class="eyebrow">${shortRange(s.from, s.to)} · ${nightsOf(s)} ${nightsOf(s) === 1 ? 'night' : 'nights'}${s.temp ? ` · ${s.temp[0]}°/${s.temp[1]}°` : ''}</span>
+          <h2>${esc(s.name)}</h2>
+          ${g.intro ? `<p>${esc(g.intro)}</p>` : ''}
+        </section>
+
+        ${daysHTML(g)}
+
+        ${top ? pickHTML(s.id, top, { top: true }) : ''}
+
+        ${present.length > 1 ? `
+          <div class="filters" role="group" aria-label="Filter">
+            <button type="button" data-gcat="all" aria-pressed="${state.guideCat === 'all'}">All <span>${rest.length}</span></button>
+            ${present.map((c) => `<button type="button" data-gcat="${c}" aria-pressed="${state.guideCat === c}">${esc(cats[c])} <span>${rest.filter((p) => p.cat === c).length}</span></button>`).join('')}
+          </div>` : ''}
+
+        <div class="picks">${shown.map((p) => pickHTML(s.id, p)).join('')}</div>
+
+        ${g.tips && g.tips.length ? `
+          <aside class="tips card" data-reveal>
+            <span class="eyebrow">Good to know</span>
+            <ul>${g.tips.map((t) => `<li>${esc(t)}</li>`).join('')}</ul>
+          </aside>` : ''}
+      </div>`;
+    }
+
+    if (mode === 'saved') {
+      const list = savedList();
+      body = list.length
+        ? `<div class="picks">${list.map(({ s: st, p }) => pickHTML(st.id, p, { stopName: st.id === 'saigon' ? 'Sài Gòn' : st.name })).join('')}</div>`
+        : `<div class="empty card">
+            <span class="empty-icon">${I.heart}</span>
+            <p><b>Nothing saved yet.</b> Tap Save on anything in Places and it’ll land here, so you’ve got your own shortlist for each stop.</p>
+          </div>`;
+    }
+
+    if (mode === 'talk') {
+      body = `
+        <section class="group">
+          <h2>Say it like a local</h2>
+          <div class="phrases">
+            ${(DATA.guide.phrases || []).map((p) => `
+              <div class="phrase" data-reveal>
+                <b lang="vi">${esc(p.vi)}</b>
+                <span class="say">${esc(p.say)}</span>
+                <span class="en">${esc(p.en)}</span>
+              </div>`).join('')}
+          </div>
+        </section>
+        <section class="group">
+          <h2>House rules</h2>
+          <div class="rules">
+            ${(DATA.guide.rules || []).map((r) => `
+              <div class="rule card" data-reveal>
+                <h3>${esc(r.title)}</h3>
+                <p>${esc(r.text)}</p>
+              </div>`).join('')}
+          </div>
+        </section>`;
+    }
+
+    $('#view-guide').innerHTML = `
+      <header class="page-head">
+        <span class="eyebrow">Picked for us</span>
+        <h1>Guide</h1>
+        <p>The good stuff at every stop, pulled from locals, travel guides and what’s blowing up online.</p>
       </header>
-
-      <div class="stats">
-        <div class="stat"><b>${daysBetween(toDate(trip.start), toDate(trip.end))}</b><span>nights</span></div>
-        <div class="stat"><b>${stops.length}</b><span>stops</span></div>
-        <div class="stat"><b data-booked-count>${booked}/${total}</b><span>stays booked</span></div>
-      </div>
-
-      <nav class="route" aria-label="Jump to a stop">
-        ${stops.map((s) => `<button type="button" data-jump="${esc(s.id)}" data-region="${slug(s.region)}"><i></i>${esc(s.id === 'saigon' ? 'Sài Gòn' : s.name)}</button>`).join('')}
-      </nav>
-
-      <div class="timeline">
-        ${stops.map((s, i) => stopHTML(s, i) + legHTML(s.next)).join('')}
-        <div class="finish"><div class="rail"><span class="dot"></span></div><p>Home, ${dayLabel(trip.end)}</p></div>
-      </div>
-
-      <p class="foot">Prices in AUD</p>`;
+      ${modes}
+      ${body}
+      <p class="foot">Prices are rough and change. ≈ A$ uses ₫${Math.round(rate()).toLocaleString('en-AU')} to the dollar.</p>`;
   }
 
   // ---------- To-do ----------
@@ -304,6 +688,17 @@
       </li>`;
   }
 
+  function ringHTML(c) {
+    const pct = c.total ? c.done / c.total : 0;
+    const r = 26;
+    const len = 2 * Math.PI * r;
+    return `
+      <div class="ring" aria-hidden="true">
+        <svg viewBox="0 0 64 64"><circle cx="32" cy="32" r="${r}" class="ring-bg"/><circle cx="32" cy="32" r="${r}" class="ring-fg" data-ring stroke-dasharray="${len.toFixed(1)}" stroke-dashoffset="${(len * (1 - pct)).toFixed(1)}"/></svg>
+        <span data-ring-pct>${Math.round(pct * 100)}%</span>
+      </div>`;
+  }
+
   function renderTodo() {
     if (!state.me) {
       $('#view-todo').innerHTML = `
@@ -354,21 +749,18 @@
 
       ${peopleHTML()}
 
-      <div class="mine">
-        <p class="mine-name">${esc(state.me)}${tripNote ? ` <span>· ${esc(tripNote)}</span>` : ''}</p>
-        <p data-todo-summary>${summaryText(c)}</p>
-        <div class="progress"><span data-todo-bar style="width:${c.total ? (c.done / c.total) * 100 : 0}%"></span></div>
+      <div class="mine card">
+        ${ringHTML(c)}
+        <div>
+          <p class="mine-name">${esc(state.me)}${tripNote ? ` <span>· ${esc(tripNote)}</span>` : ''}</p>
+          <p data-todo-summary>${summaryText(c)}</p>
+        </div>
       </div>
 
       <div class="todo-tools">
         <button class="btn" type="button" data-clear-done${c.ready ? '' : ' disabled'}>Clear done${c.ready ? ` (${c.ready})` : ''}</button>
+        <a class="btn ghost" href="#trip">Stays booked ${stays.booked}/${stays.total}</a>
       </div>
-
-      <a class="stays-link" href="#trip">
-        ${I.bed}
-        <span>Stays booked <b>${stays.booked} of ${stays.total}</b></span>
-        <span class="chev" aria-hidden="true">›</span>
-      </a>
 
       <form class="add" data-add autocomplete="off">
         <input type="text" name="text" maxlength="90" placeholder="Add something" aria-label="Add a to-do">
@@ -390,10 +782,15 @@
   function updateTodoMeta() {
     const c = todoCounts();
     const sum = $('[data-todo-summary]');
-    const bar = $('[data-todo-bar]');
+    const ring = $('[data-ring]');
+    const pctEl = $('[data-ring-pct]');
     const btn = $('[data-clear-done]');
     if (sum) sum.textContent = summaryText(c);
-    if (bar) bar.style.width = `${c.total ? (c.done / c.total) * 100 : 0}%`;
+    if (ring) {
+      const len = parseFloat(ring.getAttribute('stroke-dasharray'));
+      ring.setAttribute('stroke-dashoffset', (len * (1 - (c.total ? c.done / c.total : 0))).toFixed(1));
+    }
+    if (pctEl) pctEl.textContent = `${Math.round((c.total ? c.done / c.total : 0) * 100)}%`;
     if (btn) {
       btn.disabled = !c.ready;
       btn.textContent = c.ready ? `Clear done (${c.ready})` : 'Clear done';
@@ -403,7 +800,44 @@
     badge.textContent = c.left;
   }
 
-  // ---------- Budget ----------
+  // ---------- Money ----------
+
+  function converterHTML() {
+    const r = rate();
+    const live = state.rate && state.rate.v;
+    const when = live ? new Date(state.rate.t) : null;
+    return `
+      <section class="convert card" data-reveal>
+        <div class="convert-head">
+          <span class="eyebrow">Price check</span>
+          <button class="icon-btn small" type="button" data-conv-flip aria-label="Swap currencies">${I.swap}</button>
+        </div>
+        <label class="conv-in">
+          <span data-conv-from>${state.convFlip ? 'A$' : '₫'}</span>
+          <input type="text" inputmode="decimal" data-conv value="${state.convFlip ? '20' : '100,000'}" aria-label="Amount">
+        </label>
+        <div class="conv-out"><span data-conv-to>${state.convFlip ? '₫' : 'A$'}</span><b data-conv-result></b></div>
+        <div class="quick">
+          ${(state.convFlip ? [5, 10, 20, 50, 100] : [20000, 50000, 100000, 200000, 500000])
+            .map((v) => `<button type="button" data-quick="${v}">${state.convFlip ? 'A$' + v : dong(v).replace('.0k', 'k')}</button>`).join('')}
+        </div>
+        <small>₫${Math.round(r).toLocaleString('en-AU')} to A$1${live ? ` · live rate, ${when.getDate()} ${MON[when.getMonth()]}` : ' · rough rate'}</small>
+      </section>`;
+  }
+
+  function runConvert() {
+    const input = $('[data-conv]');
+    const out = $('[data-conv-result]');
+    if (!input || !out) return;
+    const raw = input.value.toLowerCase().replace(/,/g, '').trim();
+    let n = parseFloat(raw);
+    if (/k$/.test(raw)) n *= 1e3;
+    if (/m$/.test(raw)) n *= 1e6;
+    if (!isFinite(n)) { out.textContent = '–'; return; }
+    out.textContent = state.convFlip
+      ? Math.round(n * rate()).toLocaleString('en-AU')
+      : (n / rate()).toLocaleString('en-AU', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  }
 
   function renderBudget() {
     const plans = DATA.budget.plans;
@@ -415,18 +849,23 @@
     $('#view-budget').innerHTML = `
       <header class="page-head">
         <span class="eyebrow">Per person, AUD</span>
-        <h1>Budget</h1>
+        <h1>Money</h1>
       </header>
 
-      <div class="seg" role="group" aria-label="Which trip">
-        ${plans.map((x) => `<button type="button" data-plan="${esc(x.id)}" aria-pressed="${x.id === p.id}">${esc(x.label)} · ${x.people}</button>`).join('')}
-      </div>
+      ${converterHTML()}
 
-      <div class="total">
-        <span class="eyebrow">Each, ${esc(p.dates)}</span>
-        <b>${money(total)}</b>
-        <span>${money(total * p.people)} across the ${p.people} of us</span>
-      </div>
+      <section class="group">
+        <h2>Budget</h2>
+        <div class="seg" role="group" aria-label="Which trip">
+          ${plans.map((x) => `<button type="button" data-plan="${esc(x.id)}" aria-pressed="${x.id === p.id}">${esc(x.label)} · ${x.people}</button>`).join('')}
+        </div>
+
+        <div class="total">
+          <span class="eyebrow">Each, ${esc(p.dates)}</span>
+          <b>${money(total)}</b>
+          <span>${money(total * p.people)} across the ${p.people} of us</span>
+        </div>
+      </section>
 
       <section class="group">
         <h2>Where it goes</h2>
@@ -435,7 +874,7 @@
             ${p.items.map((it) => `
               <li>
                 <div class="row-top"><span>${esc(it.name)}</span><b>${money(it.amount)}</b></div>
-                <div class="bar"><span style="width:${(it.amount / max) * 100}%"></span></div>
+                <div class="bar"><span style="--w:${(it.amount / max) * 100}%"></span></div>
               </li>`).join('')}
           </ul>
         </div>
@@ -455,23 +894,78 @@
       </section>
 
       <p class="foot">Hà Giang includes the loop tour, not just beds.</p>`;
+    runConvert();
+  }
+
+  function fetchRate() {
+    const fresh = state.rate && Date.now() - state.rate.t < 6 * 36e5;
+    if (fresh) return;
+    fetch('https://open.er-api.com/v6/latest/AUD')
+      .then((r) => r.json())
+      .then((d) => {
+        const v = d && d.rates && d.rates.VND;
+        if (!v) return;
+        state.rate = { v, t: Date.now() };
+        save();
+        if (!$('#view-budget').hidden) renderBudget();
+        if (!$('#view-guide').hidden) renderGuide();
+      })
+      .catch(() => {});
+  }
+
+  // ---------- motion ----------
+
+  let io = null;
+  function reveal() {
+    const els = $$('[data-reveal]:not(.in)');
+    if (reduceMotion || !('IntersectionObserver' in window)) {
+      els.forEach((el) => el.classList.add('in'));
+      return;
+    }
+    if (!io) {
+      io = new IntersectionObserver((entries) => {
+        entries.forEach((en) => {
+          if (en.isIntersecting) {
+            en.target.classList.add('in');
+            io.unobserve(en.target);
+          }
+        });
+      }, { rootMargin: '0px 0px -6% 0px' });
+    }
+    els.forEach((el) => io.observe(el));
   }
 
   // ---------- routing ----------
 
-  function route() {
+  function current() {
     const name = location.hash.slice(1);
-    const view = VIEWS.includes(name) ? name : 'trip';
-    VIEWS.forEach((v) => {
-      $(`#view-${v}`).hidden = v !== view;
-      const tab = $(`.tab[data-tab="${v}"]`);
-      if (v === view) tab.setAttribute('aria-current', 'page');
-      else tab.removeAttribute('aria-current');
-    });
+    return VIEWS.includes(name) ? name : 'trip';
+  }
+
+  function render(view) {
+    if (view === 'trip') renderTrip();
+    if (view === 'guide') renderGuide();
     if (view === 'todo') renderTodo();
     if (view === 'budget') renderBudget();
-    if (view === 'trip') renderTrip();
+    reveal();
+  }
+
+  function route() {
+    const view = current();
+    VIEWS.forEach((v, i) => {
+      $(`#view-${v}`).hidden = v !== view;
+      const tab = $(`.tab[data-tab="${v}"]`);
+      if (v === view) {
+        tab.setAttribute('aria-current', 'page');
+        $('.tabbar').style.setProperty('--i', i);
+      } else tab.removeAttribute('aria-current');
+    });
+    render(view);
     window.scrollTo(0, 0);
+  }
+
+  function rerender() {
+    render(current());
   }
 
   // ---------- toast ----------
@@ -487,20 +981,29 @@
 
   // ---------- events ----------
 
-  document.addEventListener('click', async (e) => {
-    const t = e.target.closest('[data-book],[data-jump],[data-share],[data-hint-close],[data-clear-done],[data-restore],[data-restore-all],[data-remove],[data-plan],[data-person]');
-    if (!t) return;
+  const ACTIONS = '[data-book],[data-jump],[data-share],[data-hint-close],[data-clear-done],[data-restore],[data-restore-all],[data-remove],[data-plan],[data-person],[data-gstop],[data-gcat],[data-gmode],[data-save],[data-guide-stop],[data-quick],[data-conv-flip]';
 
-    if (t.dataset.person) {
-      state.me = t.dataset.person;
+  function jumpTo(id) {
+    const el = document.getElementById(`stop-${id}`);
+    if (el) el.scrollIntoView({ behavior: reduceMotion ? 'auto' : 'smooth', block: 'start' });
+  }
+
+  document.addEventListener('click', async (e) => {
+    const t = e.target.closest(ACTIONS);
+    if (!t) return;
+    const d = t.dataset;
+
+    if (d.person) {
+      state.me = d.person;
       save();
       renderTodo();
       updateTodoMeta();
+      reveal();
       return;
     }
 
-    if (t.dataset.book) {
-      const stop = DATA.trip.stops.find((s) => s.id === t.dataset.book);
+    if (d.book) {
+      const stop = stopById(d.book);
       const now = !isBooked(stop);
       state.booked[stop.id] = now;
       save();
@@ -513,9 +1016,72 @@
       return;
     }
 
-    if (t.dataset.jump) {
-      const el = document.getElementById(`stop-${t.dataset.jump}`);
-      if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    if (d.jump) { jumpTo(d.jump); return; }
+
+    if (d.guideStop) {
+      e.preventDefault();
+      state.guideStop = d.guideStop;
+      state.guideMode = 'places';
+      state.guideCat = 'all';
+      save();
+      location.hash = '#guide';
+      return;
+    }
+
+    if (d.gstop) {
+      state.guideStop = d.gstop;
+      state.guideCat = 'all';
+      save();
+      renderGuide();
+      reveal();
+      const chip = $(`[data-gstop="${d.gstop}"]`);
+      if (chip) chip.scrollIntoView({ inline: 'center', block: 'nearest', behavior: reduceMotion ? 'auto' : 'smooth' });
+      return;
+    }
+
+    if (d.gcat) {
+      state.guideCat = d.gcat;
+      save();
+      renderGuide();
+      reveal();
+      return;
+    }
+
+    if (d.gmode) {
+      state.guideMode = d.gmode;
+      save();
+      renderGuide();
+      reveal();
+      return;
+    }
+
+    if (d.save) {
+      const on = !state.saved[d.save];
+      if (on) state.saved[d.save] = true;
+      else delete state.saved[d.save];
+      save();
+      t.setAttribute('aria-pressed', on);
+      t.querySelector('span').textContent = on ? 'Saved' : 'Save';
+      const segBtn = $('[data-gmode="saved"]');
+      const n = savedList().length;
+      if (segBtn) segBtn.textContent = `Saved${n ? ` · ${n}` : ''}`;
+      if (!on && state.guideMode === 'saved') { renderGuide(); reveal(); }
+      toast(on ? 'Saved to your list' : 'Removed');
+      return;
+    }
+
+    if (d.quick) {
+      const input = $('[data-conv]');
+      input.value = Number(d.quick).toLocaleString('en-AU');
+      runConvert();
+      return;
+    }
+
+    if (t.hasAttribute('data-conv-flip')) {
+      state.convFlip = !state.convFlip;
+      save();
+      renderBudget();
+      reveal();
       return;
     }
 
@@ -549,14 +1115,15 @@
       return;
     }
 
-    if (t.dataset.restore) {
+    if (d.restore) {
       const m = mine();
-      delete m.cleared[t.dataset.restore];
-      delete m.done[t.dataset.restore];
+      delete m.cleared[d.restore];
+      delete m.done[d.restore];
       save();
       renderTodo();
       updateTodoMeta();
-      $('.cleared') && ($('.cleared').open = true);
+      const det = $('.cleared');
+      if (det) det.open = true;
       return;
     }
 
@@ -570,22 +1137,29 @@
       return;
     }
 
-    if (t.dataset.remove) {
+    if (d.remove) {
       const m = mine();
-      const id = t.dataset.remove;
-      m.custom = m.custom.filter((c) => c.id !== id);
-      delete m.done[id];
-      delete m.cleared[id];
+      m.custom = m.custom.filter((c) => c.id !== d.remove);
+      delete m.done[d.remove];
+      delete m.cleared[d.remove];
       save();
       renderTodo();
       updateTodoMeta();
       return;
     }
 
-    if (t.dataset.plan) {
-      state.plan = t.dataset.plan;
+    if (d.plan) {
+      state.plan = d.plan;
       save();
       renderBudget();
+      reveal();
+    }
+  });
+
+  document.addEventListener('keydown', (e) => {
+    if ((e.key === 'Enter' || e.key === ' ') && e.target.matches('.m-stop')) {
+      e.preventDefault();
+      jumpTo(e.target.dataset.jump);
     }
   });
 
@@ -597,6 +1171,10 @@
     else delete m.done[box.dataset.item];
     save();
     updateTodoMeta();
+  });
+
+  document.addEventListener('input', (e) => {
+    if (e.target.matches('[data-conv]')) runConvert();
   });
 
   document.addEventListener('submit', (e) => {
@@ -622,11 +1200,18 @@
     return r.json();
   });
 
-  Promise.all([get('data/trip.json'), get('data/checklist.json'), get('data/budget.json')])
-    .then(([trip, checklist, budget]) => {
-      DATA = { trip, checklist, budget };
+  Promise.all([
+    get('data/trip.json'),
+    get('data/checklist.json'),
+    get('data/budget.json'),
+    get('data/guide.json'),
+  ])
+    .then(([trip, checklist, budget, guide]) => {
+      DATA = { trip, checklist, budget, guide };
       route();
       updateTodoMeta();
+      setInterval(tick, 1000);
+      fetchRate();
     })
     .catch(() => {
       $('#view-trip').innerHTML = '<p class="foot">Couldn’t load the plan. Check your connection and try again.</p>';

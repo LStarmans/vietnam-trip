@@ -2,6 +2,7 @@
   "title": "Việt Nam",
   "start": "2027-01-16",
   "end": "2027-02-19",
+  "arrive": "2027-01-16T10:05:00+07:00",
   "currency": "AUD",
   "events": [
     {
@@ -32,10 +33,36 @@
         "link": null,
         "booked": true
       },
-      "plan": ["Bùi Viện Street", "Cu Chi Tunnels", "Shooting range", "Bến Thành Market", "Rooftop bars", "War Remnants Museum", "Central Post Office", "Street food", "Shopping"],
-      "cost": { "total": 509, "each": 72 },
+      "plan": [
+        "Bùi Viện Street",
+        "Cu Chi Tunnels",
+        "Shooting range",
+        "Bến Thành Market",
+        "Rooftop bars",
+        "War Remnants Museum",
+        "Central Post Office",
+        "Street food",
+        "Shopping"
+      ],
+      "cost": {
+        "total": 509,
+        "each": 72
+      },
       "note": "We land at 10:05am. Check-in is usually 2pm, so drop the bags and go eat.",
-      "next": { "mode": "bus", "title": "Bus to Đà Lạt", "when": "19–20 Jan", "detail": "$21 each, super early start" }
+      "next": {
+        "mode": "bus",
+        "title": "Bus to Đà Lạt",
+        "when": "19–20 Jan",
+        "detail": "$21 each, super early start"
+      },
+      "temp": [
+        32,
+        22
+      ],
+      "at": [
+        10.78,
+        106.7
+      ]
     },
     {
       "id": "dalat",
@@ -51,10 +78,34 @@
         "link": "https://www.booking.com/hotel/vn/lang-biet-thu-lan-anh-da-lat.en-gb.html?checkin=2027-01-20&checkout=2027-01-22&group_adults=7&no_rooms=1",
         "booked": true
       },
-      "plan": ["Canyoning", "White-water rafting", "Datanla Alpine Coaster", "Waterfalls", "Crazy House", "Night market", "Bars"],
-      "cost": { "total": 225, "each": 32 },
+      "plan": [
+        "Canyoning",
+        "White-water rafting",
+        "Datanla Alpine Coaster",
+        "Waterfalls",
+        "Crazy House",
+        "Night market",
+        "Bars"
+      ],
+      "cost": {
+        "total": 225,
+        "each": 32
+      },
       "note": "Up in the hills, so it gets cold at night. Bring a jumper.",
-      "next": { "mode": "van", "title": "Minibus to Nha Trang", "when": "22 Jan", "detail": "$23 each, about 4 hours" }
+      "next": {
+        "mode": "van",
+        "title": "Minibus to Nha Trang",
+        "when": "22 Jan",
+        "detail": "$23 each, about 4 hours"
+      },
+      "temp": [
+        23,
+        12
+      ],
+      "at": [
+        11.94,
+        108.44
+      ]
     },
     {
       "id": "nhatrang",
@@ -70,10 +121,31 @@
         "link": null,
         "booked": true
       },
-      "plan": ["Island hopping", "Beach clubs", "Fishing", "Surfing"],
-      "cost": { "total": 1086, "each": 155 },
+      "plan": [
+        "Island hopping",
+        "Beach clubs",
+        "Fishing",
+        "Surfing"
+      ],
+      "cost": {
+        "total": 1086,
+        "each": 155
+      },
       "note": null,
-      "next": { "mode": "overnight", "title": "Overnight sleeper to Hội An", "when": "26–27 Jan", "detail": "Bus or train. The train stops in Đà Nẵng, 45 min out" }
+      "next": {
+        "mode": "overnight",
+        "title": "Overnight sleeper to Hội An",
+        "when": "26–27 Jan",
+        "detail": "Bus or train. The train stops in Đà Nẵng, 45 min out"
+      },
+      "temp": [
+        27,
+        22
+      ],
+      "at": [
+        12.24,
+        109.19
+      ]
     },
     {
       "id": "hoian",
@@ -89,10 +161,31 @@
         "link": null,
         "booked": true
       },
-      "plan": ["Old Town", "Beach", "That café from YouTube", "Bikes"],
-      "cost": { "total": 325, "each": 46 },
+      "plan": [
+        "Old Town",
+        "Beach",
+        "That café from YouTube",
+        "Bikes"
+      ],
+      "cost": {
+        "total": 325,
+        "each": 46
+      },
       "note": "Last stop all together. Three of us head home from here.",
-      "next": { "mode": "car", "title": "Bus or Grab to Đà Nẵng", "when": "29 Jan", "detail": "About an hour" }
+      "next": {
+        "mode": "car",
+        "title": "Bus or Grab to Đà Nẵng",
+        "when": "29 Jan",
+        "detail": "About an hour"
+      },
+      "temp": [
+        25,
+        20
+      ],
+      "at": [
+        15.88,
+        108.33
+      ]
     },
     {
       "id": "danang",
@@ -108,10 +201,30 @@
         "link": null,
         "booked": true
       },
-      "plan": ["Train", "Fishing", "Surfing"],
-      "cost": { "total": 488, "each": 122 },
+      "plan": [
+        "Train",
+        "Fishing",
+        "Surfing"
+      ],
+      "cost": {
+        "total": 488,
+        "each": 122
+      },
       "note": null,
-      "next": { "mode": "plane", "title": "Fly to Hà Nội", "when": "4 Feb", "detail": "First day of Tết, book early" }
+      "next": {
+        "mode": "plane",
+        "title": "Fly to Hà Nội",
+        "when": "4 Feb",
+        "detail": "First day of Tết, book early"
+      },
+      "temp": [
+        25,
+        19
+      ],
+      "at": [
+        16.05,
+        108.22
+      ]
     },
     {
       "id": "hanoi",
@@ -127,10 +240,29 @@
         "link": null,
         "booked": true
       },
-      "plan": ["Tour guy from Instagram", "Food"],
-      "cost": { "total": 80, "each": 20 },
+      "plan": [
+        "Tour guy from Instagram",
+        "Food"
+      ],
+      "cost": {
+        "total": 80,
+        "each": 20
+      },
       "note": null,
-      "next": { "mode": "bus", "title": "Bus to Ninh Bình", "when": "7 Feb", "detail": "About 2 hours" }
+      "next": {
+        "mode": "bus",
+        "title": "Bus to Ninh Bình",
+        "when": "7 Feb",
+        "detail": "About 2 hours"
+      },
+      "temp": [
+        20,
+        15
+      ],
+      "at": [
+        21.03,
+        105.85
+      ]
     },
     {
       "id": "ninhbinh",
@@ -146,10 +278,31 @@
         "link": null,
         "booked": true
       },
-      "plan": ["Tràng An boat tour", "Hang Múa hike", "Tam Cốc", "Cycling"],
-      "cost": { "total": 326, "each": 81.5 },
+      "plan": [
+        "Tràng An boat tour",
+        "Hang Múa hike",
+        "Tam Cốc",
+        "Cycling"
+      ],
+      "cost": {
+        "total": 326,
+        "each": 81.5
+      },
       "note": "Still Tết, so expect crowds. Go early in the morning.",
-      "next": { "mode": "overnight", "title": "Overnight drive to Hà Giang", "when": "10–11 Feb", "detail": null }
+      "next": {
+        "mode": "overnight",
+        "title": "Overnight drive to Hà Giang",
+        "when": "10–11 Feb",
+        "detail": null
+      },
+      "temp": [
+        20,
+        15
+      ],
+      "at": [
+        20.22,
+        105.94
+      ]
     },
     {
       "id": "hagiang",
@@ -165,10 +318,31 @@
         "link": null,
         "booked": true
       },
-      "plan": ["Motorbike loop", "Mã Pí Lèng Pass", "Đồng Văn", "Nho Quế River"],
-      "cost": { "total": 1442, "each": 360.5 },
+      "plan": [
+        "Motorbike loop",
+        "Mã Pí Lèng Pass",
+        "Đồng Văn",
+        "Nho Quế River"
+      ],
+      "cost": {
+        "total": 1442,
+        "each": 360.5
+      },
       "note": "Send everyone's insurance details to the tour company.",
-      "next": { "mode": "bus", "title": "Drive back to Hà Nội", "when": "14–15 Feb", "detail": "Bed for the night: $40 total, $10 each" }
+      "next": {
+        "mode": "bus",
+        "title": "Drive back to Hà Nội",
+        "when": "14–15 Feb",
+        "detail": "Bed for the night: $40 total, $10 each"
+      },
+      "temp": [
+        18,
+        9
+      ],
+      "at": [
+        22.82,
+        104.98
+      ]
     },
     {
       "id": "halong",
@@ -184,10 +358,30 @@
         "link": null,
         "booked": true
       },
-      "plan": ["Cruise", "Kayaking", "Caves"],
-      "cost": { "total": 40, "each": 10 },
+      "plan": [
+        "Cruise",
+        "Kayaking",
+        "Caves"
+      ],
+      "cost": {
+        "total": 40,
+        "each": 10
+      },
       "note": null,
-      "next": { "mode": "bus", "title": "Back to Hà Nội", "when": "18 Feb", "detail": "About 2.5 hours" }
+      "next": {
+        "mode": "bus",
+        "title": "Back to Hà Nội",
+        "when": "18 Feb",
+        "detail": "About 2.5 hours"
+      },
+      "temp": [
+        19,
+        15
+      ],
+      "at": [
+        20.95,
+        107.08
+      ]
     },
     {
       "id": "hanoi-last",
@@ -203,10 +397,25 @@
         "link": null,
         "booked": true
       },
-      "plan": ["Last night out"],
+      "plan": [
+        "Last night out"
+      ],
       "cost": null,
       "note": null,
-      "next": { "mode": "plane", "title": "Fly home", "when": "19 Feb", "detail": null }
+      "next": {
+        "mode": "plane",
+        "title": "Fly home",
+        "when": "19 Feb",
+        "detail": null
+      },
+      "temp": [
+        21,
+        16
+      ],
+      "at": [
+        21.03,
+        105.85
+      ]
     }
   ]
 }

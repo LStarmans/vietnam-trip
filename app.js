@@ -435,8 +435,8 @@
 
           ${s.cost ? `
             <div class="cost" data-reveal>
-              <span><b>${money(s.cost.total)}</b>total</span>
-              <span><b>${money(s.cost.each)}</b>each</span>
+              <span><b>${money(costOf(s).total)}</b>total</span>
+              <span><b>${money(costOf(s).each)}</b>each</span>
             </div>` : ''}
         </div>
       </article>`;
@@ -930,12 +930,85 @@
       : (n / rate()).toLocaleString('en-AU', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
   }
 
+  // Budget lines, with any edits made on this phone.
+  function planItems(p) {
+    const own = state.budgets && state.budgets[p.id];
+    return own || p.items.map((it) => ({ name: it.name, amount: it.amount }));
+  }
+
+  function editItems(p) {
+    if (!state.budgets) state.budgets = {};
+    if (!state.budgets[p.id]) state.budgets[p.id] = planItems(p);
+    return state.budgets[p.id];
+  }
+
+  function currentPlan() {
+    const plans = DATA.budget.plans;
+    return plans.find((x) => x.id === state.plan) || plans[0];
+  }
+
+  // Stop costs, with any edits made on this phone.
+  function costOf(s) {
+    const each = state.stopCosts && state.stopCosts[s.id];
+    if (each == null) return s.cost;
+    return { each, total: Math.round(each * s.people * 100) / 100 };
+  }
+
+  const toNum = (v) => {
+    const n = parseFloat(String(v).replace(/[^0-9.]/g, ''));
+    return isFinite(n) ? Math.round(n * 100) / 100 : 0;
+  };
+
+  function budgetTotals() {
+    const p = currentPlan();
+    const total = planItems(p).reduce((sum, it) => sum + (Number(it.amount) || 0), 0);
+    const t = $('[data-btotal]');
+    const all = $('[data-ball]');
+    if (t) t.textContent = money(total);
+    if (all) all.textContent = `${money(total * p.people)} across the ${p.people} of us`;
+  }
+
   function renderBudget() {
     const plans = DATA.budget.plans;
-    const p = plans.find((x) => x.id === state.plan) || plans[0];
-    const total = p.items.reduce((sum, it) => sum + it.amount, 0);
-    const max = Math.max(...p.items.map((it) => it.amount));
+    const p = currentPlan();
+    const items = planItems(p);
+    const total = items.reduce((sum, it) => sum + (Number(it.amount) || 0), 0);
+    const max = Math.max(1, ...items.map((it) => Number(it.amount) || 0));
     const stops = DATA.trip.stops.filter((s) => s.cost);
+    const edit = !!state.budgetEdit;
+    const edited = !!(state.budgets && state.budgets[p.id]) || !!(state.stopCosts && Object.keys(state.stopCosts).length);
+
+    const itemRows = edit
+      ? `<ul class="rows edit">
+          ${items.map((it, i) => `
+            <li class="erow">
+              <input class="e-name" type="text" data-bname="${i}" value="${esc(it.name)}" aria-label="Expense name" maxlength="40">
+              <label class="e-amt"><span>$</span><input type="text" inputmode="decimal" data-bamt="${i}" value="${esc(it.amount)}" aria-label="Amount for ${esc(it.name)}"></label>
+              <button class="e-del" type="button" data-bdel="${i}" aria-label="Remove ${esc(it.name)}">${I.x}</button>
+            </li>`).join('')}
+          <li class="erow add-row"><button class="e-add" type="button" data-badd>+ Add an expense</button></li>
+        </ul>`
+      : `<ul class="rows">
+          ${items.map((it) => `
+            <li>
+              <div class="row-top"><span>${esc(it.name)}</span><b>${money(Number(it.amount) || 0)}</b></div>
+              <div class="bar"><span style="--w:${((Number(it.amount) || 0) / max) * 100}%"></span></div>
+            </li>`).join('')}
+        </ul>`;
+
+    const stopRows = stops.map((s) => {
+      const c = costOf(s);
+      return edit
+        ? `<li class="erow" data-region="${slug(s.region)}">
+            <span class="e-label"><i></i>${esc(s.name)}</span>
+            <label class="e-amt"><span>$</span><input type="text" inputmode="decimal" data-scost="${esc(s.id)}" value="${esc(c.each)}" aria-label="Cost each for ${esc(s.name)}"></label>
+            <small class="e-each">each</small>
+          </li>`
+        : `<li data-region="${slug(s.region)}">
+            <span><i></i>${esc(s.name)}</span>
+            <span><b>${money(c.each)}</b><small>each</small></span>
+          </li>`;
+    }).join('');
 
     $('#view-budget').innerHTML = `
       <header class="page-head">
@@ -953,36 +1026,35 @@
 
         <div class="total">
           <span class="eyebrow">Each, ${esc(p.dates)}</span>
-          <b>${money(total)}</b>
-          <span>${money(total * p.people)} across the ${p.people} of us</span>
+          <b data-btotal>${money(total)}</b>
+          <span data-ball>${money(total * p.people)} across the ${p.people} of us</span>
         </div>
       </section>
 
       <section class="group">
-        <h2>Where it goes</h2>
-        <div class="list">
-          <ul class="rows">
-            ${p.items.map((it) => `
-              <li>
-                <div class="row-top"><span>${esc(it.name)}</span><b>${money(it.amount)}</b></div>
-                <div class="bar"><span style="--w:${(it.amount / max) * 100}%"></span></div>
-              </li>`).join('')}
-          </ul>
+        <div class="group-head">
+          <h2>Where it goes</h2>
+          <button class="link-btn" type="button" data-bedit>${edit ? 'Done' : 'Edit'}</button>
         </div>
+        <div class="list">${itemRows}</div>
       </section>
 
       <section class="group">
-        <h2>By stop</h2>
+        <div class="group-head">
+          <h2>By stop</h2>
+          ${edit ? '' : '<button class="link-btn" type="button" data-bedit>Edit</button>'}
+        </div>
         <div class="list">
-          <ul class="rows by-stop">
-            ${stops.map((s) => `
-              <li data-region="${slug(s.region)}">
-                <span><i></i>${esc(s.name)}</span>
-                <span><b>${money(s.cost.each)}</b><small>each</small></span>
-              </li>`).join('')}
-          </ul>
+          <ul class="rows by-stop${edit ? ' edit' : ''}">${stopRows}</ul>
         </div>
       </section>
+
+      ${edit ? '<button class="btn wide" type="button" data-bedit>Done</button>' : ''}
+      ${edited ? `
+        <div class="edited-note">
+          <span>Changes are saved on this phone.</span>
+          <button class="link-btn" type="button" data-breset>Reset to the plan</button>
+        </div>` : ''}
 
       <p class="foot">Hà Giang includes the loop tour, not just beds.</p>`;
     runConvert();
@@ -1161,7 +1233,7 @@
 
   // ---------- events ----------
 
-  const ACTIONS = '[data-book],[data-jump],[data-share],[data-hint-close],[data-clear-done],[data-restore],[data-restore-all],[data-remove],[data-plan],[data-person],[data-gstop],[data-gcat],[data-gmode],[data-save],[data-guide-stop],[data-quick],[data-conv-flip],[data-scroll-cue]';
+  const ACTIONS = '[data-book],[data-jump],[data-share],[data-hint-close],[data-clear-done],[data-restore],[data-restore-all],[data-remove],[data-plan],[data-person],[data-gstop],[data-gcat],[data-gmode],[data-save],[data-guide-stop],[data-quick],[data-conv-flip],[data-scroll-cue],[data-bedit],[data-bdel],[data-badd],[data-breset]';
 
   function jumpTo(id) {
     const el = document.getElementById(`stop-${id}`);
@@ -1197,6 +1269,45 @@
     }
 
     if (d.jump) { jumpTo(d.jump); return; }
+
+    if (t.hasAttribute('data-bedit')) {
+      state.budgetEdit = !state.budgetEdit;
+      save();
+      renderBudget();
+      reveal();
+      return;
+    }
+
+    if (d.bdel) {
+      editItems(currentPlan()).splice(Number(d.bdel), 1);
+      save();
+      renderBudget();
+      reveal();
+      return;
+    }
+
+    if (t.hasAttribute('data-badd')) {
+      editItems(currentPlan()).push({ name: 'New expense', amount: 0 });
+      save();
+      renderBudget();
+      reveal();
+      const names = $$('[data-bname]');
+      const last = names[names.length - 1];
+      if (last) { last.focus(); last.select(); }
+      return;
+    }
+
+    if (t.hasAttribute('data-breset')) {
+      if (!window.confirm('Reset the budget and stop costs on this phone back to the plan?')) return;
+      state.budgets = {};
+      state.stopCosts = {};
+      state.budgetEdit = false;
+      save();
+      renderBudget();
+      reveal();
+      toast('Back to the plan');
+      return;
+    }
 
     if (t.hasAttribute('data-scroll-cue')) {
       const next = $('.statement');
@@ -1360,7 +1471,22 @@
   });
 
   document.addEventListener('input', (e) => {
-    if (e.target.matches('[data-conv]')) runConvert();
+    const el = e.target;
+    if (el.matches('[data-conv]')) runConvert();
+    if (el.matches('[data-bname]')) {
+      editItems(currentPlan())[Number(el.dataset.bname)].name = el.value;
+      save();
+    }
+    if (el.matches('[data-bamt]')) {
+      editItems(currentPlan())[Number(el.dataset.bamt)].amount = toNum(el.value);
+      save();
+      budgetTotals();
+    }
+    if (el.matches('[data-scost]')) {
+      if (!state.stopCosts) state.stopCosts = {};
+      state.stopCosts[el.dataset.scost] = toNum(el.value);
+      save();
+    }
   });
 
   document.addEventListener('submit', (e) => {

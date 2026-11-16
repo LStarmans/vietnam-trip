@@ -216,7 +216,14 @@
     if ($('#view-trip').hidden) return;
     const p = countdownParts(DATA.trip.arrive || DATA.trip.start);
     if (p) {
-      const set = (k, v) => { const el = $(`[data-cd="${k}"]`); if (el && el.textContent !== v) el.textContent = v; };
+      const set = (k, v) => {
+        const el = $(`[data-cd="${k}"]`);
+        if (!el || el.textContent === v) return;
+        el.textContent = v;
+        el.classList.remove('roll');
+        void el.offsetWidth;
+        el.classList.add('roll');
+      };
       set('d', String(p.d)); set('h', pad(p.h)); set('m', pad(p.m)); set('s', pad(p.s));
     }
     const tp = countdownParts(TET_EVE);
@@ -337,6 +344,23 @@
       </section>`;
   }
 
+  // Each letter in its own mask so they can rise in one after another.
+  function letters(word, start, cls = '') {
+    return `<span class="word${cls ? ' ' + cls : ''}" aria-hidden="true">${Array.from(word).map((ch, i) =>
+      `<span class="ltr" style="--i:${start + i}"><span>${esc(ch)}</span></span>`).join('')}</span>`;
+  }
+
+  function marqueeHTML() {
+    const names = DATA.trip.stops
+      .filter((s, i, all) => all.findIndex((x) => x.at.join() === s.at.join()) === i)
+      .map((s) => s.local && s.id !== 'halong' ? s.local : shortName(s));
+    const run = names.map((n, i) => `<span class="mq-item${i % 2 ? ' outline' : ''}">${esc(n)}</span><span class="mq-dot" aria-hidden="true"></span>`).join('');
+    return `
+      <div class="marquee" data-marquee aria-hidden="true">
+        <div class="mq-track">${run}${run}</div>
+      </div>`;
+  }
+
   function highlightsHTML() {
     const cards = DATA.trip.stops.filter((s) => s.photo && s.id !== 'hanoi-last').map((s) => {
       const top = (guideFor(s.id).picks || []).find((p) => p.top);
@@ -352,12 +376,17 @@
         </a>`;
     }).join('');
     return `
-      <section class="highlights">
-        <header class="section-head" data-reveal>
-          <span class="eyebrow">Get the highlights</span>
-          <h2>One thing you can’t skip at every stop.</h2>
-        </header>
-        <div class="hl-scroll">${cards}</div>
+      <section class="highlights" data-hpin>
+        <div class="hl-sticky">
+          <header class="section-head" data-reveal>
+            <span class="eyebrow">Get the highlights</span>
+            <h2>One thing you can’t skip at every stop.</h2>
+          </header>
+          <div class="hl-window">
+            <div class="hl-scroll">${cards}</div>
+          </div>
+          <div class="hl-progress" aria-hidden="true"><span></span></div>
+        </div>
       </section>`;
   }
 
@@ -490,7 +519,7 @@
             <button class="icon-btn glass" type="button" data-share aria-label="Share with the group">${I.share}</button>
           </div>
           <div class="hero-copy">
-            <h1 class="hero-title">Việt <span class="grad">Nam</span></h1>
+            <h1 class="hero-title" aria-label="Việt Nam">${letters('Việt', 0)} ${letters('Nam', 4, 'grad')}</h1>
             <p class="hero-sub">Sài Gòn to Hà Nội, the long way round.</p>
             ${clockHTML()}
           </div>
@@ -502,6 +531,8 @@
 
       ${today}
       ${install}
+
+      ${marqueeHTML()}
 
       ${statementHTML()}
 
@@ -1150,17 +1181,92 @@
       $$('[data-count]').forEach((el) => { el.textContent = el.dataset.count + (el.dataset.suffix || ''); });
     }
     setStep(0);
+    sizePin();
+    startMarquee();
     scrollFx();
   }
 
+  // The highlights gallery pins in place and slides sideways as you scroll down.
+  let pinOver = 0;
+  function sizePin() {
+    const sec = $('[data-hpin]');
+    if (!sec) return;
+    const track = $('.hl-scroll', sec);
+    const pinned = !reduceMotion && window.innerWidth < 1600;
+    sec.classList.toggle('pinned', pinned);
+    if (!pinned) { sec.style.height = ''; track.style.transform = ''; return; }
+    sec.style.height = '';
+    pinOver = Math.max(0, track.scrollWidth - track.parentElement.clientWidth);
+    sec.style.height = `${pinOver + window.innerHeight}px`;
+  }
+
+  // Place names drifting across the screen. Scrolling speeds them up and sets the direction.
+  let mq = { x: 0, v: 0, dir: 1, raf: 0, on: false, io: null };
+  function startMarquee() {
+    const el = $('[data-marquee]');
+    if (mq.io) mq.io.disconnect();
+    cancelAnimationFrame(mq.raf);
+    if (!el || reduceMotion) return;
+    const track = $('.mq-track', el);
+    mq.io = new IntersectionObserver(([en]) => { mq.on = en.isIntersecting; }, { rootMargin: '100px 0px' });
+    mq.io.observe(el);
+    const loop = () => {
+      if (mq.on && !$('#view-trip').hidden) {
+        const half = track.scrollWidth / 2;
+        mq.x -= (0.6 + Math.min(mq.v, 40) * 0.35) * mq.dir;
+        if (mq.x <= -half) mq.x += half;
+        if (mq.x > 0) mq.x -= half;
+        const skew = clamp(mq.v * 0.25, 0, 8) * -mq.dir;
+        track.style.transform = `translate3d(${mq.x.toFixed(1)}px,0,0) skewX(${skew.toFixed(2)}deg)`;
+      }
+      mq.v *= 0.92;
+      mq.raf = requestAnimationFrame(loop);
+    };
+    mq.raf = requestAnimationFrame(loop);
+  }
+
   // Scroll-linked effects: hero zoom and fade, words lighting up, photo parallax.
+  let lastY = window.scrollY;
   function scrollFx() {
-    if ($('#view-trip').hidden) return;
     const vh = window.innerHeight;
     const y = window.scrollY;
+    const dy = y - lastY;
+    lastY = y;
+
+    // Tab bar tucks itself away while you scroll down, comes back when you scroll up.
+    const bar = $('.tabbar');
+    if (bar) {
+      if (dy > 6 && y > 240) bar.classList.add('min');
+      else if (dy < -6 || y < 120) bar.classList.remove('min');
+    }
+    mq.v = Math.abs(dy);
+    if (dy) mq.dir = dy > 0 ? 1 : -1;
+
+    const line = $('.scroll-line');
+    const docH = document.documentElement.scrollHeight - vh;
+    if (line) line.style.transform = `scaleX(${docH > 0 ? clamp(y / docH).toFixed(4) : 0})`;
+
+    if ($('#view-trip').hidden) return;
 
     const hero = $('[data-hero]');
     if (hero) hero.style.setProperty('--p', clamp(y / (hero.offsetHeight * 0.85)).toFixed(3));
+
+    const pin = $('[data-hpin].pinned');
+    if (pin && pinOver) {
+      const r = pin.getBoundingClientRect();
+      const prog = clamp(-r.top / Math.max(1, r.height - vh));
+      $('.hl-scroll', pin).style.transform = `translate3d(${(-prog * pinOver).toFixed(1)}px,0,0)`;
+      const bar2 = $('.hl-progress span', pin);
+      if (bar2) bar2.style.transform = `scaleX(${prog.toFixed(3)})`;
+    }
+
+    if (!reduceMotion) {
+      $$('.ch-photo').forEach((el) => {
+        const r = el.getBoundingClientRect();
+        if (r.top > vh + 50 || r.bottom < -50) return;
+        el.style.setProperty('--rev', clamp((vh - r.top) / (vh * 0.75)).toFixed(3));
+      });
+    }
 
     const st = $('[data-words]');
     if (st && words.length) {
@@ -1185,7 +1291,7 @@
     ticking = true;
     requestAnimationFrame(() => { ticking = false; scrollFx(); });
   }, { passive: true });
-  window.addEventListener('resize', () => scrollFx(), { passive: true });
+  window.addEventListener('resize', () => { sizePin(); scrollFx(); }, { passive: true });
 
   // ---------- routing ----------
 
@@ -1522,6 +1628,7 @@
       DATA = { trip, checklist, budget, guide };
       route();
       updateTodoMeta();
+      if (document.fonts) document.fonts.ready.then(() => { sizePin(); scrollFx(); });
       setInterval(tick, 1000);
       fetchRate();
     })

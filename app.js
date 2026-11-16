@@ -309,12 +309,6 @@
       </svg>`;
   }
 
-  function statementHTML() {
-    const text = 'Thirty-four nights. Ten stops. Over three thousand kilometres from the motorbike swarm of Sài Gòn to the passes on the Chinese border, with New Year’s Eve on Hoàn Kiếm Lake in the middle of it all.';
-    const words = text.split(' ').map((w) => `<span class="w">${esc(w)}</span>`).join(' ');
-    return `<section class="statement" data-words><p>${words}</p></section>`;
-  }
-
   function storyHTML() {
     const stops = DATA.trip.stops;
     return `

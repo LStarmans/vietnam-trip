@@ -454,6 +454,8 @@
           ${s.plan && s.plan.length ? `<ul class="chips" data-reveal>${s.plan.map((p) => `<li>${esc(p)}</li>`).join('')}</ul>` : ''}
           ${s.note ? `<p class="note" data-reveal>${esc(s.note)}</p>` : ''}
 
+          ${seeHTML(s)}
+
           ${top ? `
             <a class="to-guide" href="#guide" data-guide-stop="${esc(s.id)}" data-reveal>
               <span><small>Don’t miss</small>${esc(top.name)}</span>
@@ -467,6 +469,34 @@
             </div>` : ''}
         </div>
       </article>`;
+  }
+
+  // What we're going to see here: anything saved in the Guide, then the must-dos.
+  function seeHTML(s) {
+    const picks = guideFor(s.id).picks || [];
+    const cats = DATA.guide.cats || {};
+    const saved = picks.filter((p) => state.saved[pickKey(s.id, p)]);
+    const must = picks.filter((p) => !state.saved[pickKey(s.id, p)] && (p.top || (p.tags || []).includes('must')));
+    const list = saved.concat(must);
+    if (!list.length) return '';
+    return `
+      <div class="see card" data-reveal>
+        <div class="see-head">
+          <span class="eyebrow">What we’ll see</span>
+          ${saved.length ? `<span class="see-count">${I.heart}${saved.length} saved</span>` : ''}
+        </div>
+        <ul>
+          ${list.map((p) => {
+            const isSaved = !!state.saved[pickKey(s.id, p)];
+            return `
+              <li>
+                <span class="see-cat">${esc(cats[p.cat] || p.cat)}</span>
+                <span class="see-name">${esc(p.name)}${isSaved ? `<span class="see-heart" title="Saved">${I.heart}</span>` : ''}</span>
+                ${p.map ? `<a class="see-map" href="${mapsUrl(p.map)}" target="_blank" rel="noopener" aria-label="Map for ${esc(p.name)}">${I.pin}</a>` : ''}
+              </li>`;
+          }).join('')}
+        </ul>
+      </div>`;
   }
 
   function legBand(leg) {
@@ -933,10 +963,19 @@
         <div class="conv-out"><span data-conv-to>${state.convFlip ? '₫' : 'A$'}</span><b data-conv-result></b></div>
         <div class="quick">
           ${(state.convFlip ? [5, 10, 20, 50, 100] : [20000, 50000, 100000, 200000, 500000])
-            .map((v) => `<button type="button" data-quick="${v}">${state.convFlip ? 'A$' + v : dong(v).replace('.0k', 'k')}</button>`).join('')}
+            .map((v) => `<button type="button" data-quick="${v}">+${state.convFlip ? 'A$' + v : dong(v).replace('.0k', 'k')}</button>`).join('')}
+          <button type="button" class="q-clear" data-conv-clear>Clear</button>
         </div>
         <small>₫${Math.round(r).toLocaleString('en-AU')} to A$1${live ? ` · live rate, ${when.getDate()} ${MON[when.getMonth()]}` : ' · rough rate'}</small>
       </section>`;
+  }
+
+  function convValue(v) {
+    const raw = String(v).toLowerCase().replace(/,/g, '').trim();
+    let n = parseFloat(raw);
+    if (/k$/.test(raw)) n *= 1e3;
+    if (/m$/.test(raw)) n *= 1e6;
+    return isFinite(n) ? n : 0;
   }
 
   function runConvert() {
@@ -1331,7 +1370,7 @@
 
   // ---------- events ----------
 
-  const ACTIONS = '[data-book],[data-jump],[data-share],[data-hint-close],[data-clear-done],[data-restore],[data-restore-all],[data-remove],[data-plan],[data-person],[data-gstop],[data-gcat],[data-gmode],[data-save],[data-guide-stop],[data-quick],[data-conv-flip],[data-scroll-cue],[data-bedit],[data-bdel],[data-badd],[data-breset]';
+  const ACTIONS = '[data-book],[data-jump],[data-share],[data-hint-close],[data-clear-done],[data-restore],[data-restore-all],[data-remove],[data-plan],[data-person],[data-gstop],[data-gcat],[data-gmode],[data-save],[data-guide-stop],[data-quick],[data-conv-clear],[data-conv-flip],[data-scroll-cue],[data-bedit],[data-bdel],[data-badd],[data-breset]';
 
   function jumpTo(id) {
     const el = document.getElementById(`stop-${id}`);
@@ -1466,10 +1505,17 @@
     }
 
     if (d.quick) {
+      // Works like a calculator: each tap adds to what's already there.
       const input = $('[data-conv]');
-      input.value = Number(d.quick).toLocaleString('en-AU');
+      input.value = (convValue(input.value) + Number(d.quick)).toLocaleString('en-AU');
       runConvert();
       return;
+    }
+
+    if (t.hasAttribute('data-conv-clear')) {
+      const input = $('[data-conv]');
+      input.value = '0';
+      runConvert();
     }
 
     if (t.hasAttribute('data-conv-flip')) {

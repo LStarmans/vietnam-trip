@@ -2,7 +2,7 @@
 
 (() => {
   const STORE = 'vn27';
-  const VIEWS = ['trip', 'guide', 'todo', 'budget'];
+  const VIEWS = ['trip', 'guide', 'todo', 'budget', 'wallet'];
   const MON = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
   const DOW = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 
@@ -32,6 +32,7 @@
   }
   function save() {
     try { localStorage.setItem(STORE, JSON.stringify(state)); } catch (e) { /* private mode */ }
+    queueSync();
   }
 
   function mine() {
@@ -52,7 +53,11 @@
     .replace(/đ/g, 'd').replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
   const reduceMotion = matchMedia('(prefers-reduced-motion: reduce)').matches;
 
+  // ?today=2027-01-21 previews what the app looks like on that day of the trip.
+  const fakeToday = new URLSearchParams(location.search).get('today');
+
   function today() {
+    if (fakeToday && /^\d{4}-\d\d-\d\d$/.test(fakeToday)) return toDate(fakeToday);
     const t = new Date();
     t.setHours(0, 0, 0, 0);
     return t;
@@ -124,6 +129,11 @@
     heart: icon('<path d="M19 14c1.5-1.5 3-3.2 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.8 0-3 .5-4.5 2-1.5-1.5-2.7-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4 3 5.5l7 7Z"/>'),
     clock: icon('<circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/>'),
     arrow: icon('<path d="M5 12h14M12 5l7 7-7 7"/>'),
+    download: icon('<path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"/>'),
+    ticket: icon('<path d="M2 9a3 3 0 0 1 0 6v2a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-2a3 3 0 0 1 0-6V7a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2Z"/><path d="M13 5v2M13 17v2M13 11v2"/>'),
+    car2: icon('<path d="M19 17h2c.6 0 1-.4 1-1v-3c0-.9-.7-1.7-1.5-1.9C18.7 10.6 16 10 16 10s-1.3-1.4-2.2-2.3c-.5-.4-1.1-.7-1.8-.7H5c-.6 0-1.1.4-1.4.9l-1.4 2.9A3.7 3.7 0 0 0 2 12v4c0 .6.4 1 1 1h2M9 17h6"/><circle cx="7" cy="17" r="2"/><circle cx="17" cy="17" r="2"/>'),
+    edit: icon('<path d="M12 20h9M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"/>'),
+    cloud: icon('<path d="M17.5 19H9a7 7 0 1 1 6.7-9h1.8a4.5 4.5 0 1 1 0 9Z"/>'),
     swap: icon('<path d="m16 3 4 4-4 4M20 7H4M8 21l-4-4 4-4M4 17h16"/>'),
   };
 
@@ -450,6 +460,11 @@
 
           ${seeHTML(s)}
 
+          <div class="ch-tools" data-reveal>
+            <button class="mini" type="button" data-offline="${esc(s.id)}">${I.download}Offline map</button>
+            ${walletFor(s.id).length ? `<a class="mini" href="#wallet">${I.ticket}${walletFor(s.id).length} in wallet</a>` : ''}
+          </div>
+
           ${top ? `
             <a class="to-guide" href="#guide" data-guide-stop="${esc(s.id)}" data-reveal>
               <span><small>Don’t miss</small>${esc(top.name)}</span>
@@ -521,13 +536,20 @@
         <button class="icon-btn" type="button" data-hint-close aria-label="Dismiss">${I.x}</button>
       </div>` : '';
 
-    const today = tp ? `
+    const todayCard = tp ? `
       <section class="today-plan" data-region="${tpStop ? slug(tpStop.region) : ''}">
         ${dayCard(tp.dy, tp.n, { label: `Today in ${tpStop ? tpStop.name : ''}` })}
         <a class="to-guide" href="#guide" data-guide-stop="${esc(tp.g.id)}"><span><small>More ideas</small>Open the guide for ${esc(tpStop ? tpStop.name : 'here')}</span><span class="to-guide-n">${I.arrow}</span></a>
       </section>` : '';
 
     const hanoiIdx = stops.findIndex((s) => s.id === 'hanoi');
+    const onTrip = today() >= toDate(trip.start) && today() <= toDate(trip.end);
+
+    if (onTrip) {
+      $('#view-trip').innerHTML = todayModeHTML() + install + tripBodyHTML(stops, booked, total, hanoiIdx);
+      setupTripFx();
+      return;
+    }
 
     $('#view-trip').innerHTML = `
       <section class="hero" data-hero>
@@ -550,11 +572,17 @@
         </div>
       </section>
 
-      ${today}
+      ${todayCard}
       ${install}
+      ${tripBodyHTML(stops, booked, total, hanoiIdx)}`;
 
+    setupTripFx();
+  }
+
+  function tripBodyHTML(stops, booked, total, hanoiIdx) {
+    const trip = DATA.trip;
+    return `
       ${marqueeHTML()}
-
 
       <section class="numbers">
         <div class="num" data-reveal><b data-count="${daysBetween(toDate(trip.start), toDate(trip.end))}">0</b><span>nights</span></div>
@@ -586,8 +614,6 @@
         </div>
         <p class="foot">Prices in AUD · temperatures are the usual high and low · ${esc(trip.photos.credit || '')}</p>
       </section>`;
-
-    setupTripFx();
   }
 
   // ---------- Guide ----------
@@ -908,7 +934,7 @@
       ${groupsHTML}
       ${clearedHTML}
 
-      <p class="foot">Ticks are saved on this phone.</p>`;
+      <p class="foot sync-foot"><span data-sync></span></p>`;
   }
 
   function summaryText(c) {
@@ -1108,7 +1134,7 @@
       ${edit ? '<button class="btn wide" type="button" data-bedit>Done</button>' : ''}
       ${edited ? `
         <div class="edited-note">
-          <span>Changes are saved on this phone.</span>
+          <span data-sync></span>
           <button class="link-btn" type="button" data-breset>Reset to the plan</button>
         </div>` : ''}
 
@@ -1318,6 +1344,380 @@
   }, { passive: true });
   window.addEventListener('resize', () => { sizePin(); scrollFx(); }, { passive: true });
 
+  // ---------- Today mode (during the trip) ----------
+
+  function wordsLetters(text) {
+    let n = 0;
+    return text.split(' ').map((w) => {
+      const out = letters(w, n);
+      n += Array.from(w).length;
+      return out;
+    }).join(' ');
+  }
+
+  function whenLabel(days) {
+    if (days <= 0) return 'today';
+    if (days === 1) return 'tomorrow';
+    return `in ${days} days`;
+  }
+
+  function todayModeHTML() {
+    const trip = DATA.trip;
+    const stops = trip.stops;
+    const t = today();
+    const start = toDate(trip.start);
+    const end = toDate(trip.end);
+    const day = daysBetween(start, t) + 1;
+    const total = daysBetween(start, end) + 1;
+    const here = currentStop();
+
+    // Overnight legs fall between stops.
+    let moving = null;
+    if (!here) {
+      const i = stops.findIndex((s, k) => stops[k + 1] && toDate(s.to) <= t && t < toDate(stops[k + 1].from));
+      if (i >= 0) moving = { leg: stops[i].next, to: stops[i + 1] };
+    }
+    const focus = here || (moving && moving.to) || focusStop();
+    const idx = stops.indexOf(focus);
+    const tp = todayPlan();
+    const g = guideFor(focus.id);
+    const stays = walletFor(focus.id).filter((w) => w.type === 'Stay');
+    const addr = stays.find((w) => w.address);
+    const leaveIn = here ? daysBetween(t, toDate(here.to)) : null;
+    const name = focus.id === 'hanoi-last' ? 'Hà Nội' : (focus.id === 'saigon' ? 'Sài Gòn' : focus.name.replace(' Loop', ''));
+
+    return `
+      <section class="hero today-hero" data-hero data-region="${slug(focus.region)}">
+        <div class="hero-media">
+          ${focus.photo ? `<img alt="" fetchpriority="high" src="${photo(focus.photo, 1600)}" srcset="${srcset(focus.photo)}" sizes="100vw">` : ''}
+        </div>
+        <div class="hero-shade"></div>
+        <div class="hero-inner">
+          <div class="hero-top">
+            <span class="eyebrow light">Day ${day} of ${total} · ${dayLabel(iso(t))}</span>
+            <button class="icon-btn glass" type="button" data-share aria-label="Share with the group">${I.share}</button>
+          </div>
+          <div class="hero-copy">
+            <span class="eyebrow light">${moving ? 'On the move' : 'Today in'}</span>
+            <h1 class="hero-title today-title" aria-label="${esc(name)}">${wordsLetters(name)}</h1>
+          </div>
+        </div>
+      </section>
+
+      <section class="today-panel" data-region="${slug(focus.region)}">
+        ${moving && moving.leg ? `
+          <div class="tcard move">
+            <span class="leg-icon">${I[moving.leg.mode] || I.bus}</span>
+            <div><span class="eyebrow">Travelling</span><b>${esc(moving.leg.title)}</b><small>${esc([moving.leg.when, moving.leg.detail].filter(Boolean).join(' · '))}</small></div>
+          </div>` : ''}
+
+        ${tp ? dayCard(tp.dy, tp.n, { label: 'The plan' }) : ''}
+
+        ${focus.stay ? `
+          <div class="tcard stay-now">
+            <div class="tcard-head"><span class="eyebrow">${I.bed}Staying</span>${isBooked(focus) ? '<span class="pill ok">Booked</span>' : '<span class="pill">Not booked</span>'}</div>
+            <b>${esc(addr ? addr.title : focus.stay.name)}</b>
+            ${addr ? `<p class="addr" lang="vi">${esc(addr.address)}</p>` : '<p class="muted">No address saved yet. Add it in the Wallet so you can show a driver.</p>'}
+            <div class="tcard-actions">
+              ${addr ? `<button class="btn" type="button" data-driver="${esc(addr.id)}">${I.car2}Show driver</button>
+                <a class="btn ghost" href="${mapsUrl(addr.address)}" target="_blank" rel="noopener">${I.pin}Map</a>`
+                : `<a class="btn ghost" href="#wallet" data-wallet-new="${esc(focus.id)}">${I.ticket}Add address</a>`}
+            </div>
+          </div>` : ''}
+
+        ${here && here.next ? `
+          <div class="tcard next">
+            <span class="leg-icon">${I[here.next.mode] || I.bus}</span>
+            <div><span class="eyebrow">Next move · ${whenLabel(leaveIn)}</span><b>${esc(here.next.title)}</b><small>${esc([here.next.when, here.next.detail].filter(Boolean).join(' · '))}</small></div>
+          </div>` : ''}
+
+        <div class="today-actions">
+          ${(g.picks || []).length ? `<a class="mini" href="#guide" data-guide-stop="${esc(focus.id)}">${I.pin}Guide for ${esc(name)}</a>` : ''}
+          <button class="mini" type="button" data-offline="${esc(focus.id)}">${I.download}Offline map</button>
+          <a class="mini" href="#wallet">${I.ticket}Wallet</a>
+          <button class="mini" type="button" data-jump="${esc(focus.id)}">${I.arrow}Full plan</button>
+        </div>
+      </section>`;
+  }
+
+  // ---------- Sheet (pop-up card) ----------
+
+  function openSheet(html, cls = '') {
+    const sh = $('.sheet');
+    sh.className = `sheet ${cls}`;
+    $('.sheet-card', sh).innerHTML = `<button class="icon-btn small sheet-x" type="button" data-sheet-close aria-label="Close">${I.x}</button>${html}`;
+    sh.hidden = false;
+    requestAnimationFrame(() => sh.classList.add('open'));
+    document.body.style.overflow = 'hidden';
+  }
+
+  function closeSheet() {
+    const sh = $('.sheet');
+    sh.classList.remove('open');
+    document.body.style.overflow = '';
+    setTimeout(() => { sh.hidden = true; }, 300);
+  }
+
+  function offlineSheet(id) {
+    const s = stopById(id);
+    if (!s) return;
+    const [lat, lon] = s.at;
+    const maps = `https://www.google.com/maps/search/?api=1&query=${lat},${lon}`;
+    openSheet(`
+      <span class="eyebrow">Offline map</span>
+      <h2>${esc(s.id === 'saigon' ? 'Sài Gòn' : s.name)}</h2>
+      <p>Save this area in Google Maps so directions still work with no signal.</p>
+      <ol class="steps">
+        <li>Open Google Maps on this spot with the button below.</li>
+        <li>Tap your profile picture, then <b>Offline maps</b>.</li>
+        <li>Tap <b>Select your own map</b> and fit the box around ${esc(s.name)}.</li>
+        <li>Tap <b>Download</b>. Do it on wifi before you go.</li>
+      </ol>
+      <a class="btn wide" href="${maps}" target="_blank" rel="noopener">${I.pin}Open Google Maps here</a>`);
+  }
+
+  // ---------- Wallet (this phone only, never synced) ----------
+
+  const WALLET_TYPES = ['Flight', 'Stay', 'Transport', 'Booking', 'Other'];
+  let walletEdit = null;
+
+  function walletList() {
+    if (!Array.isArray(state.wallet)) state.wallet = [];
+    return state.wallet;
+  }
+
+  function walletFor(stopId) {
+    return walletList().filter((w) => w.stop === stopId);
+  }
+
+  function walletFormHTML(w) {
+    const stops = DATA.trip.stops;
+    return `
+      <form class="wform card" data-wallet-form autocomplete="off">
+        <h3>${w.id ? 'Edit' : 'Add to wallet'}</h3>
+        <div class="seg seg-types" role="group" aria-label="Type">
+          ${WALLET_TYPES.map((t) => `<button type="button" data-wtype="${t}" aria-pressed="${w.type === t}">${t}</button>`).join('')}
+        </div>
+        <input type="hidden" name="type" value="${esc(w.type || 'Stay')}">
+        <label class="field"><span>Name</span><input name="title" required maxlength="80" value="${esc(w.title || '')}" placeholder="e.g. Lan Anh Villas"></label>
+        <label class="field"><span>Stop</span>
+          <select name="stop">
+            <option value="">None</option>
+            ${stops.map((s) => `<option value="${esc(s.id)}"${w.stop === s.id ? ' selected' : ''}>${esc(s.id === 'hanoi-last' ? 'Hà Nội (last night)' : s.name)}</option>`).join('')}
+          </select>
+        </label>
+        <label class="field"><span>When</span><input name="when" maxlength="60" value="${esc(w.when || '')}" placeholder="e.g. 20 Jan, check-in 2pm"></label>
+        <label class="field"><span>Booking ref</span><input name="ref" maxlength="40" value="${esc(w.ref || '')}" placeholder="Confirmation number"></label>
+        <label class="field"><span>Address</span><textarea name="address" rows="2" maxlength="200" placeholder="Paste it in Vietnamese if you can">${esc(w.address || '')}</textarea></label>
+        <label class="field"><span>Notes</span><textarea name="notes" rows="2" maxlength="300">${esc(w.notes || '')}</textarea></label>
+        <input type="hidden" name="id" value="${esc(w.id || '')}">
+        <div class="wform-actions">
+          <button class="btn" type="submit">Save</button>
+          <button class="btn ghost" type="button" data-wallet-cancel>Cancel</button>
+        </div>
+      </form>`;
+  }
+
+  function passHTML(w) {
+    const s = w.stop ? stopById(w.stop) : null;
+    return `
+      <article class="pass" data-type="${esc(w.type)}" data-region="${s ? slug(s.region) : ''}" data-reveal>
+        <div class="pass-top">
+          <span class="pass-type">${esc(w.type)}${s ? ` · ${esc(s.id === 'saigon' ? 'Sài Gòn' : s.name)}` : ''}</span>
+          ${w.when ? `<span class="pass-when">${esc(w.when)}</span>` : ''}
+        </div>
+        <h3>${esc(w.title)}</h3>
+        ${w.ref ? `<div class="pass-ref"><span>Ref</span><b>${esc(w.ref)}</b></div>` : ''}
+        ${w.address ? `<p class="addr" lang="vi">${esc(w.address)}</p>` : ''}
+        ${w.notes ? `<p class="pass-notes">${esc(w.notes)}</p>` : ''}
+        <div class="pass-actions">
+          ${w.address ? `<button class="mini" type="button" data-driver="${esc(w.id)}">${I.car2}Show driver</button>
+            <a class="mini" href="${mapsUrl(w.address)}" target="_blank" rel="noopener">${I.pin}Map</a>` : ''}
+          <button class="mini" type="button" data-wallet-edit="${esc(w.id)}">${I.edit}Edit</button>
+          <button class="mini danger" type="button" data-wallet-del="${esc(w.id)}" aria-label="Delete ${esc(w.title)}">${I.x}</button>
+        </div>
+      </article>`;
+  }
+
+  function renderWallet() {
+    const list = walletList();
+    const stops = DATA.trip.stops;
+    const order = (w) => (w.stop ? stops.findIndex((s) => s.id === w.stop) : 99);
+    const sorted = list.slice().sort((a, b) => order(a) - order(b));
+    const missingStays = stops.filter((s) => s.stay && !list.some((w) => w.type === 'Stay' && w.stop === s.id));
+
+    $('#view-wallet').innerHTML = `
+      <header class="page-head">
+        <span class="eyebrow">Only on this phone</span>
+        <h1>Wallet</h1>
+        <p>Flights, bookings and addresses. Stays on this phone and is never shared or uploaded.</p>
+      </header>
+
+      ${walletEdit ? walletFormHTML(walletEdit) : `
+        <button class="btn wide" type="button" data-wallet-add>${I.ticket}Add something</button>
+        ${missingStays.length ? `
+          <section class="group">
+            <h2>Add a stay address</h2>
+            <div class="route quick-stays">
+              ${missingStays.map((s) => `<button type="button" data-wallet-new="${esc(s.id)}" data-region="${slug(s.region)}"><i></i>${esc(s.id === 'saigon' ? 'Sài Gòn' : s.id === 'hanoi-last' ? 'Hà Nội, last night' : s.name)}</button>`).join('')}
+            </div>
+          </section>` : ''}`}
+
+      ${sorted.length ? `
+        <section class="group">
+          <h2>Saved · ${sorted.length}</h2>
+          <div class="passes">${sorted.map(passHTML).join('')}</div>
+        </section>` : (walletEdit ? '' : `
+        <div class="empty card">
+          <span class="empty-icon">${I.ticket}</span>
+          <p><b>Nothing here yet.</b> Add flight times, booking references and the address of each stay.</p>
+        </div>`)}`;
+  }
+
+  function driverSheet(id) {
+    const w = walletList().find((x) => x.id === id);
+    if (!w || !w.address) return;
+    openSheet(`
+      <span class="eyebrow">Show the driver</span>
+      <p class="driver-ask" lang="vi">Cho tôi đến địa chỉ này, cảm ơn!</p>
+      <p class="driver-addr" lang="vi">${esc(w.address)}</p>
+      <p class="driver-name">${esc(w.title)}</p>`, 'driver');
+  }
+
+  // ---------- Group sync (Supabase) ----------
+  // Shared: stays booked, everyone's to-do lists, saved guide picks, budget edits, stop costs.
+  // Never shared: the wallet, which person this phone is, and view settings.
+
+  const sync = { cfg: null, last: {}, timer: 0, busy: false, ok: null, ready: false };
+
+  function flat() {
+    const o = {};
+    Object.keys(state.booked || {}).forEach((k) => { o[`booked:${k}`] = !!state.booked[k]; });
+    Object.keys(state.people || {}).forEach((k) => { if (k && k !== 'null') o[`todo:${k}`] = state.people[k]; });
+    Object.keys(state.saved || {}).forEach((k) => { if (state.saved[k]) o[`saved:${k}`] = true; });
+    Object.keys(state.budgets || {}).forEach((k) => { if (state.budgets[k]) o[`budget:${k}`] = state.budgets[k]; });
+    Object.keys(state.stopCosts || {}).forEach((k) => { if (state.stopCosts[k] != null) o[`stopcost:${k}`] = state.stopCosts[k]; });
+    const out = {};
+    Object.keys(o).forEach((k) => { out[k] = JSON.stringify(o[k]); });
+    return out;
+  }
+
+  function dirtyKeys() {
+    const cur = flat();
+    const keys = new Set([...Object.keys(cur), ...Object.keys(sync.last)]);
+    return [...keys].filter((k) => (cur[k] || 'null') !== (sync.last[k] || 'null'));
+  }
+
+  function applyRow(key, value) {
+    const i = key.indexOf(':');
+    const kind = key.slice(0, i);
+    const id = key.slice(i + 1);
+    const gone = value === null || value === undefined;
+    if (kind === 'booked') { if (gone) delete state.booked[id]; else state.booked[id] = !!value; }
+    if (kind === 'todo') { if (gone) delete state.people[id]; else state.people[id] = value; }
+    if (kind === 'saved') { if (gone || !value) delete state.saved[id]; else state.saved[id] = true; }
+    if (kind === 'budget') { state.budgets = state.budgets || {}; if (gone) delete state.budgets[id]; else state.budgets[id] = value; }
+    if (kind === 'stopcost') { state.stopCosts = state.stopCosts || {}; if (gone) delete state.stopCosts[id]; else state.stopCosts[id] = value; }
+    sync.last[key] = JSON.stringify(gone ? null : value);
+    return kind;
+  }
+
+  function headers(extra = {}) {
+    const h = Object.assign({ apikey: sync.cfg.anonKey }, extra);
+    if (/^eyJ/.test(sync.cfg.anonKey)) h.Authorization = `Bearer ${sync.cfg.anonKey}`;
+    return h;
+  }
+
+  function queueSync() {
+    if (!sync.cfg || !sync.ready) return;
+    clearTimeout(sync.timer);
+    sync.timer = setTimeout(push, 700);
+  }
+
+  async function push() {
+    if (!sync.cfg || sync.busy) return;
+    const cur = flat();
+    const rows = dirtyKeys().map((k) => ({ key: k, value: JSON.parse(cur[k] || 'null') }));
+    if (!rows.length) return;
+    sync.busy = true;
+    try {
+      const r = await fetch(`${sync.cfg.url}/rest/v1/trip_state`, {
+        method: 'POST',
+        headers: headers({ 'Content-Type': 'application/json', Prefer: 'resolution=merge-duplicates,return=minimal' }),
+        body: JSON.stringify(rows),
+      });
+      if (!r.ok) throw new Error(r.status);
+      rows.forEach((row) => { sync.last[row.key] = JSON.stringify(row.value); });
+      sync.ok = true;
+    } catch (e) {
+      sync.ok = false;
+    } finally {
+      sync.busy = false;
+      syncBadge();
+      if (dirtyKeys().length && sync.ok) queueSync();
+    }
+  }
+
+  async function pull(first = false) {
+    if (!sync.cfg || sync.busy) return;
+    try {
+      const r = await fetch(`${sync.cfg.url}/rest/v1/trip_state?select=key,value`, { headers: headers() });
+      if (!r.ok) throw new Error(r.status);
+      const rows = await r.json();
+      const dirty = first ? new Set() : new Set(dirtyKeys());
+      const kinds = new Set();
+      rows.forEach((row) => {
+        if (dirty.has(row.key)) return;
+        if (!first && sync.last[row.key] === JSON.stringify(row.value)) return;
+        kinds.add(applyRow(row.key, row.value));
+      });
+      try { localStorage.setItem(STORE, JSON.stringify(state)); } catch (e) { /* private mode */ }
+      sync.ok = true;
+      sync.ready = true;
+      if (kinds.size) refreshFor(kinds);
+      if (first) push();
+    } catch (e) {
+      sync.ok = false;
+    }
+    syncBadge();
+  }
+
+  // Only redraw the screen a change affects, and never while someone is typing.
+  function refreshFor(kinds) {
+    const a = document.activeElement;
+    if (a && /INPUT|TEXTAREA|SELECT/.test(a.tagName)) return;
+    const v = current();
+    const hit = (v === 'trip' && (kinds.has('booked') || kinds.has('saved') || kinds.has('stopcost')))
+      || (v === 'guide' && kinds.has('saved'))
+      || (v === 'todo' && (kinds.has('todo') || kinds.has('booked')))
+      || (v === 'budget' && (kinds.has('budget') || kinds.has('stopcost')));
+    if (hit) { const y = window.scrollY; render(v); window.scrollTo(0, y); }
+    updateTodoMeta();
+  }
+
+  function syncText() {
+    if (!sync.cfg) return 'Saved on this phone';
+    if (sync.ok === false) return 'Offline. Will sync when back online';
+    if (sync.ok) return 'Synced with the group';
+    return 'Connecting…';
+  }
+
+  function syncBadge() {
+    $$('[data-sync]').forEach((el) => {
+      el.textContent = syncText();
+      el.dataset.state = !sync.cfg ? 'local' : (sync.ok ? 'ok' : 'off');
+    });
+  }
+
+  function startSync(cfg) {
+    if (!cfg || !cfg.url || !cfg.anonKey) { syncBadge(); return; }
+    sync.cfg = { url: cfg.url.replace(/\/$/, ''), anonKey: cfg.anonKey };
+    pull(true);
+    setInterval(() => { if (!document.hidden) pull(); }, 15000);
+    document.addEventListener('visibilitychange', () => { if (!document.hidden) pull(); });
+    window.addEventListener('online', () => pull());
+  }
+
   // ---------- routing ----------
 
   function current() {
@@ -1330,6 +1730,8 @@
     if (view === 'guide') renderGuide();
     if (view === 'todo') renderTodo();
     if (view === 'budget') renderBudget();
+    if (view === 'wallet') renderWallet();
+    syncBadge();
     reveal();
   }
 
@@ -1364,7 +1766,7 @@
 
   // ---------- events ----------
 
-  const ACTIONS = '[data-book],[data-jump],[data-share],[data-hint-close],[data-clear-done],[data-restore],[data-restore-all],[data-remove],[data-plan],[data-person],[data-gstop],[data-gcat],[data-gmode],[data-save],[data-guide-stop],[data-quick],[data-conv-clear],[data-conv-flip],[data-scroll-cue],[data-bedit],[data-bdel],[data-badd],[data-breset]';
+  const ACTIONS = '[data-book],[data-jump],[data-share],[data-hint-close],[data-clear-done],[data-restore],[data-restore-all],[data-remove],[data-plan],[data-person],[data-gstop],[data-gcat],[data-gmode],[data-save],[data-guide-stop],[data-quick],[data-conv-clear],[data-conv-flip],[data-scroll-cue],[data-bedit],[data-bdel],[data-badd],[data-breset],[data-offline],[data-driver],[data-sheet-close],[data-wallet-add],[data-wallet-new],[data-wallet-edit],[data-wallet-del],[data-wallet-cancel],[data-wtype]';
 
   function jumpTo(id) {
     const el = document.getElementById(`stop-${id}`);
@@ -1400,6 +1802,60 @@
     }
 
     if (d.jump) { jumpTo(d.jump); return; }
+
+    if (t.hasAttribute('data-sheet-close')) { closeSheet(); return; }
+    if (d.offline) { offlineSheet(d.offline); return; }
+    if (d.driver) { driverSheet(d.driver); return; }
+
+    if (t.hasAttribute('data-wallet-add')) {
+      walletEdit = { type: 'Stay' };
+      renderWallet();
+      reveal();
+      return;
+    }
+
+    if (d.walletNew) {
+      const s = stopById(d.walletNew);
+      walletEdit = { type: 'Stay', stop: d.walletNew, title: s && s.stay ? s.stay.name : '' };
+      if (current() !== 'wallet') { e.preventDefault(); location.hash = '#wallet'; return; }
+      renderWallet();
+      reveal();
+      window.scrollTo(0, 0);
+      return;
+    }
+
+    if (d.walletEdit) {
+      walletEdit = Object.assign({}, walletList().find((w) => w.id === d.walletEdit));
+      renderWallet();
+      reveal();
+      window.scrollTo(0, 0);
+      return;
+    }
+
+    if (d.walletDel) {
+      const w = walletList().find((x) => x.id === d.walletDel);
+      if (!w || !window.confirm(`Delete "${w.title}" from this phone?`)) return;
+      state.wallet = walletList().filter((x) => x.id !== d.walletDel);
+      save();
+      renderWallet();
+      reveal();
+      toast('Deleted');
+      return;
+    }
+
+    if (t.hasAttribute('data-wallet-cancel')) {
+      walletEdit = null;
+      renderWallet();
+      reveal();
+      return;
+    }
+
+    if (d.wtype) {
+      const form = t.closest('form');
+      form.elements.type.value = d.wtype;
+      $$('[data-wtype]', form).forEach((b) => b.setAttribute('aria-pressed', b === t));
+      return;
+    }
 
     if (t.hasAttribute('data-bedit')) {
       state.budgetEdit = !state.budgetEdit;
@@ -1628,6 +2084,32 @@
   });
 
   document.addEventListener('submit', (e) => {
+    const wf = e.target.closest('[data-wallet-form]');
+    if (wf) {
+      e.preventDefault();
+      const f = wf.elements;
+      const entry = {
+        id: f.id.value || `w${Date.now().toString(36)}`,
+        type: f.type.value || 'Other',
+        title: f.title.value.trim(),
+        stop: f.stop.value,
+        when: f.when.value.trim(),
+        ref: f.ref.value.trim(),
+        address: f.address.value.trim(),
+        notes: f.notes.value.trim(),
+      };
+      if (!entry.title) return;
+      const list = walletList();
+      const i = list.findIndex((w) => w.id === entry.id);
+      if (i >= 0) list[i] = entry; else list.push(entry);
+      walletEdit = null;
+      save();
+      renderWallet();
+      reveal();
+      toast('Saved to wallet');
+      return;
+    }
+
     const form = e.target.closest('[data-add]');
     if (!form) return;
     e.preventDefault();
@@ -1642,6 +2124,14 @@
   });
 
   window.addEventListener('hashchange', route);
+
+  // Tap outside the pop-up card to close it.
+  document.addEventListener('click', (e) => {
+    if (e.target.classList && e.target.classList.contains('sheet')) closeSheet();
+  });
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && !$('.sheet').hidden) closeSheet();
+  });
 
   // ---------- boot ----------
 
@@ -1663,8 +2153,14 @@
       if (document.fonts) document.fonts.ready.then(() => { sizePin(); scrollFx(); });
       setInterval(tick, 1000);
       fetchRate();
+      // Group sync switches on once data/sync.json has the Supabase details.
+      fetch('data/sync.json', { cache: 'no-cache' })
+        .then((r) => (r.ok ? r.json() : null))
+        .then((cfg) => startSync(cfg))
+        .catch(() => startSync(null));
     })
-    .catch(() => {
+    .catch((err) => {
+      console.error(err);
       $('#view-trip').innerHTML = '<p class="foot">Couldn’t load the plan. Check your connection and try again.</p>';
     });
 

@@ -37,6 +37,7 @@
     <section id="view-guide" class="view" aria-label="Guide" hidden></section>
     <section id="view-todo" class="view narrow" aria-label="To-do" hidden></section>
     <section id="view-budget" class="view narrow" aria-label="Budget" hidden></section>
+    <section id="view-wallet" class="view narrow" aria-label="Wallet" hidden></section>
   </main>
 
   <nav class="tabbar" aria-label="Sections">
@@ -58,11 +59,17 @@
         <span>To-do</span>
       </a>
       <a class="tab" href="#budget" data-tab="budget">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 7V4a1 1 0 0 0-1-1H5a2 2 0 0 0 0 4h15a1 1 0 0 1 1 1v4h-3a2 2 0 0 0 0 4h3a1 1 0 0 0 1-1v-2a1 1 0 0 0-1-1"/><path d="M3 5v14a2 2 0 0 0 2 2h15a1 1 0 0 0 1-1v-4"/></svg>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2" y="6" width="20" height="12" rx="2"/><circle cx="12" cy="12" r="2.5"/><path d="M6 12h.01M18 12h.01"/></svg>
         <span>Money</span>
+      </a>
+      <a class="tab" href="#wallet" data-tab="wallet">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 9a3 3 0 0 1 0 6v2a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-2a3 3 0 0 1 0-6V7a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2Z"/><path d="M13 5v2M13 17v2M13 11v2"/></svg>
+        <span>Wallet</span>
       </a>
     </div>
   </nav>
+
+  <div class="sheet" hidden><div class="sheet-card" role="dialog" aria-modal="true"></div></div>
 
   <div class="scroll-line" aria-hidden="true"></div>
   <div class="toast" role="status" aria-live="polite"></div>

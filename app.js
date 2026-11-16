@@ -209,7 +209,7 @@
         <div class="clock single"><div><b>${day}</b><span>of ${total} days</span></div></div>
         <p class="clock-cap">${here ? `In ${esc(here.name)} right now` : 'On the move today'}</p>`;
     }
-    return `<p class="clock-cap">${daysBetween(start, end) + 1} days in Vietnam. Not bad.</p>`;
+    return `<p class="clock-cap">${daysBetween(start, end) + 1} days in Vietnam</p>`;
   }
 
   function tick() {
@@ -320,8 +320,7 @@
     return `
       <section class="story">
         <header class="section-head" data-reveal>
-          <span class="eyebrow">The route</span>
-          <h2>North, the whole way.</h2>
+          <h2>Route</h2>
         </header>
         <div class="story-grid">
           <div class="story-map"><div class="story-map-inner card">${mapSVG()}
@@ -379,8 +378,7 @@
       <section class="highlights" data-hpin>
         <div class="hl-sticky">
           <header class="section-head" data-reveal>
-            <span class="eyebrow">Get the highlights</span>
-            <h2>One thing you can’t skip at every stop.</h2>
+            <h2>Highlights</h2>
           </header>
           <div class="hl-window">
             <div class="hl-scroll">${cards}</div>
@@ -520,7 +518,6 @@
           </div>
           <div class="hero-copy">
             <h1 class="hero-title" aria-label="Việt Nam">${letters('Việt', 0)} ${letters('Nam', 4, 'grad')}</h1>
-            <p class="hero-sub">Sài Gòn to Hà Nội, the long way round.</p>
             ${clockHTML()}
           </div>
           <button class="scroll-cue" type="button" data-scroll-cue aria-label="Scroll down">
@@ -534,7 +531,6 @@
 
       ${marqueeHTML()}
 
-      ${statementHTML()}
 
       <section class="numbers">
         <div class="num" data-reveal><b data-count="${daysBetween(toDate(trip.start), toDate(trip.end))}">0</b><span>nights</span></div>
@@ -549,8 +545,7 @@
 
       <section class="chapters">
         <header class="section-head" data-reveal>
-          <span class="eyebrow">Stop by stop</span>
-          <h2>Everything, in order.</h2>
+          <h2>Stops</h2>
         </header>
         <nav class="route" aria-label="Jump to a stop">
           ${stops.map((s) => `<button type="button" data-jump="${esc(s.id)}" data-region="${slug(s.region)}"><i></i>${esc(s.id === 'saigon' ? 'Sài Gòn' : s.id === 'hanoi-last' ? 'Hà Nội, last night' : s.name)}</button>`).join('')}
@@ -560,8 +555,7 @@
 
       <section class="outro" data-reveal>
         <span class="eyebrow">${dayLabel(trip.end)}</span>
-        <h2>Then home.</h2>
-        <p>Probably sunburnt, definitely broke, with a phone full of photos and a tailored shirt from Hội An.</p>
+        <h2>Home</h2>
         <div class="outro-actions">
           <a class="btn" href="#guide">Open the guide</a>
           <button class="btn ghost" type="button" data-share>Share with the group</button>
@@ -715,7 +709,7 @@
         ? `<div class="picks">${list.map(({ s: st, p }) => pickHTML(st.id, p, { stopName: st.id === 'saigon' ? 'Sài Gòn' : st.name })).join('')}</div>`
         : `<div class="empty card">
             <span class="empty-icon">${I.heart}</span>
-            <p><b>Nothing saved yet.</b> Tap Save on anything in Places and it’ll land here, so you’ve got your own shortlist for each stop.</p>
+            <p><b>Nothing saved yet.</b> Tap Save on a place to add it here.</p>
           </div>`;
     }
 
@@ -746,9 +740,7 @@
 
     $('#view-guide').innerHTML = `
       <header class="page-head">
-        <span class="eyebrow">Picked for us</span>
         <h1>Guide</h1>
-        <p>The good stuff at every stop, pulled from locals, travel guides and what’s blowing up online.</p>
       </header>
       ${modes}
       ${body}
@@ -846,7 +838,7 @@
       return `
         <section class="group">
           <h2>${esc(g.name)}</h2>
-          <ul class="list">${open.length ? open.map(itemHTML).join('') : '<li class="all-done">All sorted.</li>'}</ul>
+          <ul class="list">${open.length ? open.map(itemHTML).join('') : '<li class="all-done">Done</li>'}</ul>
         </section>`;
     }).join('');
 
@@ -897,7 +889,7 @@
 
   function summaryText(c) {
     if (!c.total) return 'Nothing on the list.';
-    if (c.left === 0) return 'Everything’s done. Pack the bag.';
+    if (c.left === 0) return 'All done';
     return `${c.done} of ${c.total} done, ${c.left} to go`;
   }
 

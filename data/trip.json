@@ -1,0 +1,212 @@
+{
+  "title": "Việt Nam",
+  "start": "2027-01-16",
+  "end": "2027-02-19",
+  "currency": "AUD",
+  "events": [
+    {
+      "from": "2027-02-04",
+      "to": "2027-02-10",
+      "title": "Tết holiday",
+      "note": "Public holiday for Lunar New Year. Lots of shops and family restaurants shut for the first few days, and buses and flights either side are packed and pricier."
+    },
+    {
+      "from": "2027-02-05",
+      "to": "2027-02-05",
+      "title": "Tết eve",
+      "note": "Fireworks at midnight. Hoàn Kiếm Lake is the place to be."
+    }
+  ],
+  "stops": [
+    {
+      "id": "saigon",
+      "name": "Ho Chi Minh City",
+      "local": "Sài Gòn",
+      "region": "South",
+      "from": "2027-01-16",
+      "to": "2027-01-19",
+      "people": 7,
+      "stay": {
+        "name": "Hotel in District 1",
+        "detail": "Shortlist of three, pick one",
+        "link": null,
+        "booked": false
+      },
+      "plan": ["Bùi Viện Street", "Cu Chi Tunnels", "Shooting range", "Bến Thành Market", "Rooftop bars", "War Remnants Museum", "Central Post Office", "Street food", "Shopping"],
+      "cost": { "total": 509, "each": 72 },
+      "note": "We land at 10:05am. Check-in is usually 2pm, so drop the bags and go eat.",
+      "next": { "mode": "bus", "title": "Bus to Đà Lạt", "when": "19–20 Jan", "detail": "$21 each, super early start" }
+    },
+    {
+      "id": "dalat",
+      "name": "Đà Lạt",
+      "local": "Đà Lạt",
+      "region": "Highlands",
+      "from": "2027-01-20",
+      "to": "2027-01-22",
+      "people": 7,
+      "stay": {
+        "name": "Lan Anh Villas",
+        "detail": "Whole villa for the seven of us",
+        "link": "https://www.booking.com/hotel/vn/lang-biet-thu-lan-anh-da-lat.en-gb.html?checkin=2027-01-20&checkout=2027-01-22&group_adults=7&no_rooms=1",
+        "booked": false
+      },
+      "plan": ["Canyoning", "White-water rafting", "Datanla Alpine Coaster", "Waterfalls", "Crazy House", "Night market", "Bars"],
+      "cost": { "total": 225, "each": 32 },
+      "note": "Up in the hills, so it gets cold at night. Bring a jumper.",
+      "next": { "mode": "van", "title": "Minibus to Nha Trang", "when": "22 Jan", "detail": "$23 each, about 4 hours" }
+    },
+    {
+      "id": "nhatrang",
+      "name": "Nha Trang",
+      "local": "Nha Trang",
+      "region": "Coast",
+      "from": "2027-01-22",
+      "to": "2027-01-26",
+      "people": 7,
+      "stay": {
+        "name": "Airbnb or Aroon Hotel",
+        "detail": "Still deciding",
+        "link": null,
+        "booked": false
+      },
+      "plan": ["Island hopping", "Beach clubs", "Fishing", "Surfing"],
+      "cost": { "total": 1086, "each": 155 },
+      "note": null,
+      "next": { "mode": "overnight", "title": "Overnight sleeper to Hội An", "when": "26–27 Jan", "detail": "Bus or train. The train stops in Đà Nẵng, 45 min out" }
+    },
+    {
+      "id": "hoian",
+      "name": "Hội An",
+      "local": "Hội An",
+      "region": "Coast",
+      "from": "2027-01-27",
+      "to": "2027-01-29",
+      "people": 7,
+      "stay": {
+        "name": "Still to find",
+        "detail": null,
+        "link": null,
+        "booked": false
+      },
+      "plan": ["Old Town", "Beach", "That café from YouTube", "Bikes"],
+      "cost": { "total": 325, "each": 46 },
+      "note": "Last stop all together. Three of us head home from here.",
+      "next": { "mode": "car", "title": "Bus or Grab to Đà Nẵng", "when": "29 Jan", "detail": "About an hour" }
+    },
+    {
+      "id": "danang",
+      "name": "Đà Nẵng",
+      "local": "Đà Nẵng",
+      "region": "Coast",
+      "from": "2027-01-29",
+      "to": "2027-02-04",
+      "people": 4,
+      "stay": {
+        "name": "Hotel or Airbnb",
+        "detail": "Still deciding",
+        "link": null,
+        "booked": false
+      },
+      "plan": ["Train", "Fishing", "Surfing"],
+      "cost": { "total": 488, "each": 122 },
+      "note": null,
+      "next": { "mode": "plane", "title": "Fly to Hà Nội", "when": "4 Feb", "detail": "First day of Tết, book early" }
+    },
+    {
+      "id": "hanoi",
+      "name": "Hà Nội",
+      "local": "Hà Nội",
+      "region": "North",
+      "from": "2027-02-04",
+      "to": "2027-02-07",
+      "people": 4,
+      "stay": {
+        "name": "Still to find",
+        "detail": null,
+        "link": null,
+        "booked": false
+      },
+      "plan": ["Tour guy from Instagram", "Food"],
+      "cost": { "total": 80, "each": 20 },
+      "note": null,
+      "next": { "mode": "bus", "title": "Bus to Ninh Bình", "when": "7 Feb", "detail": "About 2 hours" }
+    },
+    {
+      "id": "ninhbinh",
+      "name": "Ninh Bình",
+      "local": "Ninh Bình",
+      "region": "North",
+      "from": "2027-02-07",
+      "to": "2027-02-10",
+      "people": 4,
+      "stay": {
+        "name": "Hostel or homestay",
+        "detail": "Stay in Tam Cốc",
+        "link": null,
+        "booked": false
+      },
+      "plan": ["Tràng An boat tour", "Hang Múa hike", "Tam Cốc", "Cycling"],
+      "cost": { "total": 326, "each": 81.5 },
+      "note": "Still Tết, so expect crowds. Go early in the morning.",
+      "next": { "mode": "overnight", "title": "Overnight drive to Hà Giang", "when": "10–11 Feb", "detail": null }
+    },
+    {
+      "id": "hagiang",
+      "name": "Hà Giang Loop",
+      "local": "Hà Giang",
+      "region": "Far north",
+      "from": "2027-02-11",
+      "to": "2027-02-14",
+      "people": 4,
+      "stay": {
+        "name": "Homestays on the loop",
+        "detail": "Included in the tour",
+        "link": null,
+        "booked": true
+      },
+      "plan": ["Motorbike loop", "Mã Pí Lèng Pass", "Đồng Văn", "Nho Quế River"],
+      "cost": { "total": 1442, "each": 360.5 },
+      "note": "Send everyone's insurance details to the tour company.",
+      "next": { "mode": "bus", "title": "Drive back to Hà Nội", "when": "14–15 Feb", "detail": "Bed for the night: $40 total, $10 each" }
+    },
+    {
+      "id": "halong",
+      "name": "Hạ Long Bay",
+      "local": "Vịnh Hạ Long",
+      "region": "North",
+      "from": "2027-02-15",
+      "to": "2027-02-18",
+      "people": 4,
+      "stay": {
+        "name": "Shortlist of three",
+        "detail": "Bái Tử Long is meant to be better than Hạ Long",
+        "link": null,
+        "booked": false
+      },
+      "plan": ["Cruise", "Kayaking", "Caves"],
+      "cost": { "total": 40, "each": 10 },
+      "note": null,
+      "next": { "mode": "bus", "title": "Back to Hà Nội", "when": "18 Feb", "detail": "About 2.5 hours" }
+    },
+    {
+      "id": "hanoi-last",
+      "name": "Hà Nội",
+      "local": "Last night",
+      "region": "North",
+      "from": "2027-02-18",
+      "to": "2027-02-19",
+      "people": 4,
+      "stay": {
+        "name": "Still to find",
+        "detail": null,
+        "link": null,
+        "booked": false
+      },
+      "plan": ["Last night out"],
+      "cost": null,
+      "note": null,
+      "next": { "mode": "plane", "title": "Fly home", "when": "19 Feb", "detail": null }
+    }
+  ]
+}

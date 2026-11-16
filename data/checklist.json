@@ -1,0 +1,65 @@
+{
+  "groups": [
+    {
+      "name": "Paperwork",
+      "items": [
+        { "id": "passport", "text": "Passport valid until at least August 2027" },
+        { "id": "visa", "text": "Vietnam e-visa", "detail": "Only use evisa.gov.vn. Takes about a week" },
+        { "id": "insurance", "text": "Travel insurance", "detail": "Make sure it covers riding motorbikes" },
+        { "id": "insurance-hg", "text": "Send insurance details to the Hà Giang tour" },
+        { "id": "licence", "text": "Sort out a licence for scooters", "detail": "Check what your insurance needs" },
+        { "id": "copies", "text": "Photos of passport, visa and insurance on your phone" }
+      ]
+    },
+    {
+      "name": "Getting around",
+      "items": [
+        { "id": "bus-dalat", "text": "Bus Sài Gòn → Đà Lạt", "detail": "19–20 Jan" },
+        { "id": "van-nhatrang", "text": "Minibus Đà Lạt → Nha Trang", "detail": "22 Jan" },
+        { "id": "sleeper-hoian", "text": "Overnight sleeper Nha Trang → Hội An", "detail": "26 Jan" },
+        { "id": "flights-home-early", "text": "Flights home for the three leaving early", "detail": "From Đà Nẵng, around 29 Jan" },
+        { "id": "flight-hanoi", "text": "Flight Đà Nẵng → Hà Nội", "detail": "4 Feb, the first day of Tết. Don't leave it late" },
+        { "id": "halong-cruise", "text": "Hạ Long or Bái Tử Long cruise", "detail": "15–18 Feb" },
+        { "id": "flights-home", "text": "Flights home from Hà Nội", "detail": "19 Feb" },
+        { "id": "fast-track", "text": "Airport express pass and transfer" }
+      ]
+    },
+    {
+      "name": "Money",
+      "items": [
+        { "id": "card", "text": "Travel card with no foreign fees" },
+        { "id": "bank", "text": "Tell your bank you're travelling" },
+        { "id": "cash", "text": "Some cash to change on arrival" }
+      ]
+    },
+    {
+      "name": "Health",
+      "items": [
+        { "id": "gp", "text": "See the GP about jabs", "detail": "Hep A and typhoid are the usual ones" },
+        { "id": "meds", "text": "Gastro-Stop, hydration sachets, painkillers" },
+        { "id": "bugs", "text": "Insect repellent and sunscreen" }
+      ]
+    },
+    {
+      "name": "Phone",
+      "items": [
+        { "id": "esim", "text": "eSIM set up" },
+        { "id": "grab", "text": "Download Grab" },
+        { "id": "maps", "text": "Offline Google Maps for Vietnam" },
+        { "id": "translate", "text": "Google Translate with Vietnamese offline" },
+        { "id": "homescreen", "text": "Add this app to your home screen", "detail": "Share → Add to Home Screen" }
+      ]
+    },
+    {
+      "name": "Packing",
+      "items": [
+        { "id": "warm", "text": "Warm layers for the north", "detail": "Hà Giang and Hạ Long can drop to 10°C" },
+        { "id": "rain", "text": "Rain jacket" },
+        { "id": "adapter", "text": "Power adapter" },
+        { "id": "swimmers", "text": "Swimmers and thongs" },
+        { "id": "daypack", "text": "Daypack" },
+        { "id": "lock", "text": "Padlock for hostel lockers" }
+      ]
+    }
+  ]
+}

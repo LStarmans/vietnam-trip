@@ -1,0 +1,46 @@
+{
+  "currency": "AUD",
+  "plans": [
+    {
+      "id": "month",
+      "label": "Full trip",
+      "people": 4,
+      "dates": "16 Jan – 19 Feb",
+      "items": [
+        { "name": "Flights", "amount": 800 },
+        { "name": "Food", "amount": 550 },
+        { "name": "Accommodation", "amount": 537 },
+        { "name": "Hà Giang loop", "amount": 360.5 },
+        { "name": "Leisure", "amount": 250 },
+        { "name": "Domestic travel", "amount": 200 },
+        { "name": "Scooters", "amount": 130 },
+        { "name": "Travel insurance", "amount": 128 },
+        { "name": "Clothes", "amount": 100 },
+        { "name": "Beer", "amount": 100 },
+        { "name": "Airport express pass + transfer", "amount": 50 },
+        { "name": "Visa", "amount": 36 },
+        { "name": "eSIM", "amount": 25 }
+      ]
+    },
+    {
+      "id": "two-weeks",
+      "label": "Two weeks",
+      "people": 3,
+      "dates": "16 – 29 Jan",
+      "items": [
+        { "name": "Flights", "amount": 800 },
+        { "name": "Accommodation", "amount": 325 },
+        { "name": "Food", "amount": 225 },
+        { "name": "Leisure", "amount": 125 },
+        { "name": "Travel insurance", "amount": 100 },
+        { "name": "Clothes", "amount": 100 },
+        { "name": "Domestic travel", "amount": 100 },
+        { "name": "Scooters", "amount": 75 },
+        { "name": "Beer", "amount": 50 },
+        { "name": "Airport express pass + transfer", "amount": 50 },
+        { "name": "Visa", "amount": 36 },
+        { "name": "eSIM", "amount": 25 }
+      ]
+    }
+  ]
+}

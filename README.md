@@ -11,7 +11,7 @@ On iPhone: open the link in Safari, tap Share, then Add to Home Screen. It works
 Everything lives in `data/`:
 
 - `trip.json` – the stops, where we're staying, and how we get from one to the next
-- `checklist.json` – the to-do list
+- `checklist.json` – the to-do list and who's on the trip. Set someone's `"trip"` to `"month"` or `"two-weeks"` and their list only shows what applies to them
 - `budget.json` – the per-person budget
 
 Edit a file on GitHub and the app picks up the change next time it's opened.

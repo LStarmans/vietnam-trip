@@ -14,9 +14,19 @@
   // ---------- saved state (per phone) ----------
 
   const state = Object.assign(
-    { booked: {}, done: {}, cleared: {}, custom: [], plan: 'month', hint: false },
+    { booked: {}, people: {}, me: null, plan: 'month', hint: false },
     read()
   );
+
+  // Each person gets their own ticks, cleared items and extras.
+  function mine() {
+    if (!state.people[state.me]) state.people[state.me] = { done: {}, cleared: {}, custom: [] };
+    return state.people[state.me];
+  }
+
+  function person() {
+    return (DATA.checklist.people || []).find((p) => p.name === state.me) || null;
+  }
 
   function read() {
     try { return JSON.parse(localStorage.getItem(STORE)) || {}; } catch (e) { return {}; }
@@ -242,9 +252,14 @@
   // ---------- To-do ----------
 
   function todoGroups() {
-    const groups = DATA.checklist.groups.map((g) => ({ name: g.name, items: g.items }));
-    if (state.custom.length) {
-      groups.unshift({ name: 'Your own', items: state.custom.map((c) => Object.assign({ custom: true }, c)) });
+    const p = person();
+    const trip = p && p.trip;
+    const groups = DATA.checklist.groups
+      .map((g) => ({ name: g.name, items: g.items.filter((it) => !it.for || !trip || it.for === trip) }))
+      .filter((g) => g.items.length);
+    const own = mine().custom;
+    if (own.length) {
+      groups.unshift({ name: 'Your own', items: own.map((c) => Object.assign({ custom: true }, c)) });
     }
     return groups;
   }
@@ -253,16 +268,28 @@
     let total = 0;
     let done = 0;
     let ready = 0;
+    if (!state.me) return { total, done, ready, left: 0 };
+    const m = mine();
     todoGroups().forEach((g) => g.items.forEach((it) => {
       total += 1;
-      if (state.cleared[it.id]) done += 1;
-      else if (state.done[it.id]) { done += 1; ready += 1; }
+      if (m.cleared[it.id]) done += 1;
+      else if (m.done[it.id]) { done += 1; ready += 1; }
     }));
     return { total, done, ready, left: total - done };
   }
 
+  function peopleHTML() {
+    return `
+      <div class="people" role="group" aria-label="Whose list">
+        ${(DATA.checklist.people || []).map((p) => `
+          <button type="button" data-person="${esc(p.name)}" aria-pressed="${p.name === state.me}">
+            <span class="initial" aria-hidden="true">${esc(p.name.charAt(0))}</span>${esc(p.name)}
+          </button>`).join('')}
+      </div>`;
+  }
+
   function itemHTML(it) {
-    const checked = !!state.done[it.id];
+    const checked = !!mine().done[it.id];
     return `
       <li class="item">
         <label>
@@ -278,14 +305,27 @@
   }
 
   function renderTodo() {
+    if (!state.me) {
+      $('#view-todo').innerHTML = `
+        <header class="page-head">
+          <span class="eyebrow">Before we go</span>
+          <h1>To-do</h1>
+          <p>Tap your name to open your list.</p>
+        </header>
+        ${peopleHTML()}`;
+      return;
+    }
+
     const c = todoCounts();
+    const m = mine();
+    const p = person();
     const stays = bookedCount();
     const groups = todoGroups();
     const clearedItems = [];
-    groups.forEach((g) => g.items.forEach((it) => { if (state.cleared[it.id]) clearedItems.push(it); }));
+    groups.forEach((g) => g.items.forEach((it) => { if (m.cleared[it.id]) clearedItems.push(it); }));
 
     const groupsHTML = groups.map((g) => {
-      const open = g.items.filter((it) => !state.cleared[it.id]);
+      const open = g.items.filter((it) => !m.cleared[it.id]);
       return `
         <section class="group">
           <h2>${esc(g.name)}</h2>
@@ -302,13 +342,23 @@
         <button class="btn ghost" type="button" data-restore-all>Put them all back</button>
       </details>` : '';
 
+    const tripNote = p && p.trip
+      ? (DATA.budget.plans.find((x) => x.id === p.trip) || {}).label
+      : null;
+
     $('#view-todo').innerHTML = `
       <header class="page-head">
         <span class="eyebrow">Before we go</span>
         <h1>To-do</h1>
+      </header>
+
+      ${peopleHTML()}
+
+      <div class="mine">
+        <p class="mine-name">${esc(state.me)}${tripNote ? ` <span>· ${esc(tripNote)}</span>` : ''}</p>
         <p data-todo-summary>${summaryText(c)}</p>
         <div class="progress"><span data-todo-bar style="width:${c.total ? (c.done / c.total) * 100 : 0}%"></span></div>
-      </header>
+      </div>
 
       <div class="todo-tools">
         <button class="btn" type="button" data-clear-done${c.ready ? '' : ' disabled'}>Clear done${c.ready ? ` (${c.ready})` : ''}</button>
@@ -328,7 +378,7 @@
       ${groupsHTML}
       ${clearedHTML}
 
-      <p class="foot">Ticks are saved on your phone.</p>`;
+      <p class="foot">Ticks are saved on this phone.</p>`;
   }
 
   function summaryText(c) {
@@ -349,7 +399,7 @@
       btn.textContent = c.ready ? `Clear done (${c.ready})` : 'Clear done';
     }
     const badge = $('.tab-badge');
-    badge.hidden = c.left === 0;
+    badge.hidden = !state.me || c.left === 0;
     badge.textContent = c.left;
   }
 
@@ -438,8 +488,16 @@
   // ---------- events ----------
 
   document.addEventListener('click', async (e) => {
-    const t = e.target.closest('[data-book],[data-jump],[data-share],[data-hint-close],[data-clear-done],[data-restore],[data-restore-all],[data-remove],[data-plan]');
+    const t = e.target.closest('[data-book],[data-jump],[data-share],[data-hint-close],[data-clear-done],[data-restore],[data-restore-all],[data-remove],[data-plan],[data-person]');
     if (!t) return;
+
+    if (t.dataset.person) {
+      state.me = t.dataset.person;
+      save();
+      renderTodo();
+      updateTodoMeta();
+      return;
+    }
 
     if (t.dataset.book) {
       const stop = DATA.trip.stops.find((s) => s.id === t.dataset.book);
@@ -479,9 +537,10 @@
     }
 
     if (t.hasAttribute('data-clear-done')) {
+      const m = mine();
       let n = 0;
-      Object.keys(state.done).forEach((id) => {
-        if (state.done[id] && !state.cleared[id]) { state.cleared[id] = true; n += 1; }
+      Object.keys(m.done).forEach((id) => {
+        if (m.done[id] && !m.cleared[id]) { m.cleared[id] = true; n += 1; }
       });
       save();
       renderTodo();
@@ -491,8 +550,9 @@
     }
 
     if (t.dataset.restore) {
-      delete state.cleared[t.dataset.restore];
-      delete state.done[t.dataset.restore];
+      const m = mine();
+      delete m.cleared[t.dataset.restore];
+      delete m.done[t.dataset.restore];
       save();
       renderTodo();
       updateTodoMeta();
@@ -501,8 +561,9 @@
     }
 
     if (t.hasAttribute('data-restore-all')) {
-      Object.keys(state.cleared).forEach((id) => { delete state.done[id]; });
-      state.cleared = {};
+      const m = mine();
+      Object.keys(m.cleared).forEach((id) => { delete m.done[id]; });
+      m.cleared = {};
       save();
       renderTodo();
       updateTodoMeta();
@@ -510,10 +571,11 @@
     }
 
     if (t.dataset.remove) {
+      const m = mine();
       const id = t.dataset.remove;
-      state.custom = state.custom.filter((c) => c.id !== id);
-      delete state.done[id];
-      delete state.cleared[id];
+      m.custom = m.custom.filter((c) => c.id !== id);
+      delete m.done[id];
+      delete m.cleared[id];
       save();
       renderTodo();
       updateTodoMeta();
@@ -530,8 +592,9 @@
   document.addEventListener('change', (e) => {
     const box = e.target.closest('input[data-item]');
     if (!box) return;
-    if (box.checked) state.done[box.dataset.item] = true;
-    else delete state.done[box.dataset.item];
+    const m = mine();
+    if (box.checked) m.done[box.dataset.item] = true;
+    else delete m.done[box.dataset.item];
     save();
     updateTodoMeta();
   });
@@ -542,7 +605,7 @@
     e.preventDefault();
     const text = form.elements.text.value.trim();
     if (!text) return;
-    state.custom.push({ id: `c${Date.now().toString(36)}`, text });
+    mine().custom.push({ id: `c${Date.now().toString(36)}`, text });
     save();
     renderTodo();
     updateTodoMeta();

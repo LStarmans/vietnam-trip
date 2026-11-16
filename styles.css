@@ -543,6 +543,63 @@ svg { display: block; }
 
 /* ---------- To-do ---------- */
 
+.people {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 18px;
+}
+.people button {
+  appearance: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 5px 14px 5px 5px;
+  border-radius: 999px;
+  border: 1px solid var(--line);
+  background: var(--card);
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background .2s, color .2s, border-color .2s, transform .1s;
+}
+.people button:active { transform: scale(.95); }
+.initial {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  font-family: var(--serif);
+  font-size: 15px;
+  font-weight: 600;
+  background: var(--line);
+  color: var(--ink);
+}
+.people button[aria-pressed="true"] {
+  background: var(--ink);
+  border-color: var(--ink);
+  color: var(--paper);
+}
+.people button[aria-pressed="true"] .initial { background: var(--red); color: #FFF4E8; }
+
+.mine { margin-top: 22px; }
+.mine p { margin: 0; color: var(--muted); font-size: 15px; }
+.mine .mine-name {
+  font-family: var(--serif);
+  font-weight: 600;
+  font-size: 28px;
+  line-height: 1.1;
+  color: var(--ink);
+  margin-bottom: 4px;
+}
+.mine-name span {
+  font-style: italic;
+  font-weight: 400;
+  font-size: 20px;
+  color: var(--muted);
+}
+
 .progress {
   margin-top: 16px;
   height: 8px;

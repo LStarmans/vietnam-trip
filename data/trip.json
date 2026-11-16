@@ -30,7 +30,7 @@
         "name": "Hotel in District 1",
         "detail": "Shortlist of three, pick one",
         "link": null,
-        "booked": false
+        "booked": true
       },
       "plan": ["Bùi Viện Street", "Cu Chi Tunnels", "Shooting range", "Bến Thành Market", "Rooftop bars", "War Remnants Museum", "Central Post Office", "Street food", "Shopping"],
       "cost": { "total": 509, "each": 72 },
@@ -49,7 +49,7 @@
         "name": "Lan Anh Villas",
         "detail": "Whole villa for the seven of us",
         "link": "https://www.booking.com/hotel/vn/lang-biet-thu-lan-anh-da-lat.en-gb.html?checkin=2027-01-20&checkout=2027-01-22&group_adults=7&no_rooms=1",
-        "booked": false
+        "booked": true
       },
       "plan": ["Canyoning", "White-water rafting", "Datanla Alpine Coaster", "Waterfalls", "Crazy House", "Night market", "Bars"],
       "cost": { "total": 225, "each": 32 },
@@ -68,7 +68,7 @@
         "name": "Airbnb or Aroon Hotel",
         "detail": "Still deciding",
         "link": null,
-        "booked": false
+        "booked": true
       },
       "plan": ["Island hopping", "Beach clubs", "Fishing", "Surfing"],
       "cost": { "total": 1086, "each": 155 },
@@ -87,7 +87,7 @@
         "name": "Still to find",
         "detail": null,
         "link": null,
-        "booked": false
+        "booked": true
       },
       "plan": ["Old Town", "Beach", "That café from YouTube", "Bikes"],
       "cost": { "total": 325, "each": 46 },
@@ -106,7 +106,7 @@
         "name": "Hotel or Airbnb",
         "detail": "Still deciding",
         "link": null,
-        "booked": false
+        "booked": true
       },
       "plan": ["Train", "Fishing", "Surfing"],
       "cost": { "total": 488, "each": 122 },
@@ -125,7 +125,7 @@
         "name": "Still to find",
         "detail": null,
         "link": null,
-        "booked": false
+        "booked": true
       },
       "plan": ["Tour guy from Instagram", "Food"],
       "cost": { "total": 80, "each": 20 },
@@ -144,7 +144,7 @@
         "name": "Hostel or homestay",
         "detail": "Stay in Tam Cốc",
         "link": null,
-        "booked": false
+        "booked": true
       },
       "plan": ["Tràng An boat tour", "Hang Múa hike", "Tam Cốc", "Cycling"],
       "cost": { "total": 326, "each": 81.5 },
@@ -182,7 +182,7 @@
         "name": "Shortlist of three",
         "detail": "Bái Tử Long is meant to be better than Hạ Long",
         "link": null,
-        "booked": false
+        "booked": true
       },
       "plan": ["Cruise", "Kayaking", "Caves"],
       "cost": { "total": 40, "each": 10 },
@@ -201,7 +201,7 @@
         "name": "Still to find",
         "detail": null,
         "link": null,
-        "booked": false
+        "booked": true
       },
       "plan": ["Last night out"],
       "cost": null,
